@@ -25,6 +25,7 @@ copyFileSync(
 );
 copyFileSync(join(tess, "LICENSE.md"), join(out, "LICENSE-Tesseract.txt"));
 copyFileSync(join(core, "LICENSE"), join(out, "LICENSE-core.txt"));
+copyFileSync(resolve("LICENSE"), join(out, "LICENSE-Genshin-Scanner.txt"));
 copyFileSync(
   resolve("packages/good/src/upstream/LICENSE"),
   join(out, "LICENSE-Optimizer.txt"),

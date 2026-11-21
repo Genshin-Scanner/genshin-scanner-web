@@ -1,6 +1,5 @@
-# Источники GOOD
+# GOOD sources
 
-Каталог `src/upstream` содержит схему артефакта, таблицы ключей и используемые функции Zod из Genshin Optimizer. Выбраны зависимости для чтения артефактов, импорты заменены локальными. Оболочка экспорта ограничена артефактами GOOD v3. Лицензия MIT включена рядом с исходниками.
+`src/upstream` contains the artifact schema, key tables, and Zod helpers from Genshin Optimizer. The adapter includes the dependencies used to read artifacts and resolves their imports locally. The export envelope covers artifacts in GOOD v3. The [upstream MIT license](src/upstream/LICENSE) is included alongside the sources.
 
-[Ревизия f24bcb8](https://github.com/frzyc/genshin-optimizer/tree/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi) · [Схема формата](https://github.com/frzyc/genshin-optimizer/blob/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/good/src/schemas/good-format.ts)
-Таблицы в `stat-values.json` извлечены из `libs/gi/stats/Data/Artifacts` той же ревизии. Для 4★ и 5★ сохранены главные значения и возможные количества роллов для каждого отображаемого сабстата с поправками на округление.
+The tables in `stat-values.json` come from `libs/gi/stats/Data/Artifacts` at the same revision. For 4★ and 5★ artifacts they preserve main stat values and the possible roll counts for each displayed substat value, including rounding corrections. [Pinned revision f24bcb8](https://github.com/frzyc/genshin-optimizer/tree/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi) · [GOOD format schema](https://github.com/frzyc/genshin-optimizer/blob/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/good/src/schemas/good-format.ts)

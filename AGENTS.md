@@ -1,24 +1,24 @@
-# Инструкции для работы с Genshin Scanner
+# Working on Genshin Scanner
 
-Общайся с Кириллом по-русски. Перед изменением проекта прочитай [текущее состояние](docs/PROJECT-STATE.md) и [архитектуру v1](docs/v1-ARCHITECTURE.md).
+Communicate with the user in Russian. Read the [project status](docs/PROJECT-STATE.md) and [v1 architecture](docs/v1-ARCHITECTURE.md) before changing the project.
 
-## Разработка
+## Development
 
-- Используй Bun для зависимостей, workspaces и команд проекта, Vite для сборки, React и TypeScript для сайта. Целевая площадка — GitHub Pages. Видео, кадры и OCR обрабатываются локально в браузере.
-- Сохраняй независимость ядра для интеграции в Genshin Optimizer. Его входы — пиксели, время кадра и передаваемая функция OCR. DOM, декодирование видео, worker и React относятся к внешним пакетам. Миниатюры вырезай из записи.
-- Выводи типы GOOD из схем закреплённой ревизии Optimizer. Фиксируй источник и лицензию заимствованного кода или модели. Сохраняй сомнительные поля для проверки до применения значений по умолчанию.
-- В v1 поддерживаем английский интерфейс игры на ПК и артефакты 4★ и 5★. Держи языковые правила и профили экранной раскладки раздельно для дальнейшего добавления языков, мобильного HUD и других пропорций экрана.
-- Исходные записи и скриншоты в `test-assets/` приватны. Храни их вне Git. Для публичного теста допустима отдельная копия изображения с непрозрачной заглушкой поверх UID и удалёнными метаданными. Проверь изображение перед добавлением в индекс.
+- Use Bun for dependencies, workspaces, and project commands. Build with Vite and use React and TypeScript for the site. Target GitHub Pages. Keep video decoding, frame processing, and OCR local to the browser.
+- Keep the core reusable in Genshin Optimizer. Its inputs are pixels, frame timestamps, and an injected OCR function. Keep DOM access, video decoding, workers, and React in the outer packages. Crop thumbnails from the recording.
+- Derive GOOD types from the schemas at the pinned Optimizer revision. Record the source and license of borrowed code and models. Flag uncertain readings before applying schema defaults.
+- Target the English PC inventory and 4★ and 5★ artifacts in v1. Keep language rules and screen layout profiles separate so new languages, mobile layouts, and aspect ratios can be added independently.
+- Keep original recordings and screenshots in the Git-ignored `test-assets/` directory. For a public regression test, use a separate copy with an opaque mask over the UID and remove its metadata. Inspect the resulting image before staging it.
 
-## Проверки и коммиты
+## Checks and commits
 
-- Покрывай изменяемое поведение тестами подходящего уровня. Для ядра проверяй входные пиксели, переходы и поля результата, для браузерного адаптера — декодирование, отмену и работу с ресурсами, для сайта — исправление, исключение и экспорт карточек. На обнаруженный дефект добавляй воспроизводящий его тест.
-- Сверяй распознавание c тремя контрольными кадрами, а изменение детектора — с локальным роликом на 33 предмета. Подробные ожидания перечислены в документе v1. Для обязательных автоматических проверок в чистом клоне используй синтетические или обезличенные примеры.
-- Перед каждым коммитом прогони тесты и Prettier. Для изменений кода также выполни применимые проверки типов, сборки и интеграции. Используй команды проекта через Bun. До появления пакетных скриптов запускай `bun test` и `bunx prettier@3.6.2 --check` с явным списком изменённых поддерживаемых файлов. Повтори проверки после исправлений.
-- Проверь подготовленный diff через `git diff --cached --check` и список файлов через `git diff --cached --name-only`. Исправь обнаруженные проблемы перед коммитом. Если комплект тестов ещё пуст или проверка требует отдельной среды, укажи это в отчёте.
-- Делай небольшие проверяемые коммиты. Подписывай их SSH-ключом, настроенным для репозитория (`id_ed25519_codex`). При делегировании проверок можно использовать субагента GPT-6.1 Sol. Ответственность за результат остаётся у автора коммита.
+- Test changed behavior at the appropriate level. Cover pixel input, transitions, and recognized fields in the core. Cover decoding, cancellation, and resource cleanup in the browser adapter. Cover editing, exclusion, and export in the site. Add a regression test when fixing a defect.
+- Check recognition against the three reference frames. Check detector changes against the local 33-item recording. Use the v1 acceptance criteria for expected results. Tests required in a clean clone must use synthetic or anonymized fixtures.
+- Run tests and Prettier before each commit. For code changes, also run applicable type, build, and integration checks. Use the Bun project scripts and rerun checks after fixes. Where package scripts are unavailable, use `bun test` and `bunx prettier@3.6.2 --check` with an explicit list of changed files that Prettier supports.
+- Inspect the staged changes with `git diff --cached --check` and the file list with `git diff --cached --name-only`. Fix issues before committing. Report an empty test suite or any check that requires a separate environment.
+- Make small, verifiable commits and sign them with the SSH key configured for this repository (`id_ed25519_codex`). Checks may be delegated to a GPT-6.1 Sol subagent. The commit author remains responsible for the results.
 
-## Документация
+## Documentation
 
-- Веди [docs/PROJECT-STATE.md](docs/PROJECT-STATE.md) как единое описание реализованных возможностей, доступных команд, проверок и текущего этапа. Обновляй его при изменении фактического состояния проекта.
-- Для новой версии создавай отдельный документ вида `docs/vN-ARCHITECTURE.md`. Для устойчивых изменений рабочего процесса обновляй этот файл.
+- Maintain [the project status](docs/PROJECT-STATE.md) as the single account of implemented features, available commands, verification results, and the current milestone. Update it when the state of the project changes.
+- Create a separate `docs/vN-ARCHITECTURE.md` document for each new version. Update these instructions when the development workflow changes.
