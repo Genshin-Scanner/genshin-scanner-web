@@ -15,3 +15,22 @@ test("ignores transient changes and separates equal items selected in adjacent c
   out.push(d.flush());
   expect(out.map((s) => s?.start)).toEqual([2, 6]);
 });
+test("a long menu interval ends an artifact selection", () => {
+  const d = new SegmentDetector();
+  d.push(0, mark(1));
+  d.push(0.1, mark(1));
+  expect(d.push(3, undefined)?.start).toBe(0);
+  d.push(4, mark(1));
+  d.push(4.1, mark(1));
+  expect(d.flush()?.start).toBe(4);
+});
+test("OCR uses a settled frame for both attempts after a selection", () => {
+  const d = new SegmentDetector();
+  d.push(0, { ...mark(30), quality: 100 });
+  d.push(0.1, mark(30));
+  d.push(0.2, mark(30));
+  d.push(0.3, mark(30));
+  const segment = d.flush()!;
+  expect(segment.time).toBeGreaterThanOrEqual(0.2);
+  expect(segment.alternate).toBeGreaterThanOrEqual(0.2);
+});

@@ -2,6 +2,7 @@ import type { Field } from "./index";
 import type { Pixels } from "./pixels";
 // The upstream scanner separates the header, paper and green set heading before OCR.
 export function prepareText(image: Pixels, field: Field): Pixels {
+  if (field === "mainValue") return image;
   const pad = 12,
     scale = 2,
     width = image.width * scale + pad * 2,

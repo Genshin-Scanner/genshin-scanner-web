@@ -33,3 +33,16 @@ test("guards main stat slot, rarity level, repeated and hidden stats", () => {
     validateArtifact({ ...sands, unactivatedSubstats: sands.substats }),
   ).toContain("substats");
 });
+test("rejects upgraded substats on a level zero artifact", () => {
+  expect(
+    validateArtifact({
+      ...sands,
+      rarity: 5,
+      substats: [
+        { key: "critRate_", value: 23.3 },
+        { key: "critDMG_", value: 46.6 },
+        { key: "atk", value: 117 },
+      ],
+    }),
+  ).toContain("substats");
+});

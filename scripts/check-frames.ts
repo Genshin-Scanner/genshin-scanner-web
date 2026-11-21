@@ -29,7 +29,12 @@ const read: Ocr = async (image, field) => {
       field === "header" || field === "stats"
         ? PSM.SINGLE_BLOCK
         : PSM.SINGLE_LINE,
-    tessedit_char_whitelist: field === "level" ? "+0123456789" : "",
+    tessedit_char_whitelist:
+      field === "level"
+        ? "+0123456789"
+        : field === "mainValue"
+          ? "0123456789,.%"
+          : "",
   });
   return (await worker.recognize(PNG.sync.write(png))).data.text;
 };

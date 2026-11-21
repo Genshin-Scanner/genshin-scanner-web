@@ -3,6 +3,7 @@ import {
   allLocationCharacterKeys,
   allSubstatKeys,
   artSlotMainKeys,
+  displayMainValue,
   type Artifact,
 } from "@scanner/good";
 export const normalize = (s: string) =>
@@ -69,6 +70,7 @@ for (const element of [
   labels[element.toLowerCase() + "_dmg_"] = element + " DMG Bonus";
 export interface Readings {
   header: string;
+  mainValue?: string;
   level: string;
   stats: string;
   set: string;
@@ -76,11 +78,11 @@ export interface Readings {
 }
 export interface LocaleProfile {
   language: string;
-  parse: (text: Readings) => Partial<Artifact>;
+  parse: (text: Readings, rarity?: number) => Partial<Artifact>;
 }
 export const english: LocaleProfile = {
   language: "eng",
-  parse(t) {
+  parse(t, rarity) {
     const lines = t.header
       .trim()
       .split(/\n+/)
@@ -95,7 +97,10 @@ export const english: LocaleProfile = {
       )
       .find(Boolean);
     const candidates = slotKey ? artSlotMainKeys[slotKey] : [];
-    const percent = t.header.includes("%");
+    const amountReadings = [t.mainValue?.trim() ?? "", ...lines].filter((s) =>
+      /^[\d,]+(?:\.\d+)?%?$/.test(s),
+    );
+    const percent = amountReadings.some((s) => s.endsWith("%"));
     const mainStatKey = lines
       .map((s) =>
         lookup(
@@ -106,7 +111,21 @@ export const english: LocaleProfile = {
       )
       .find(Boolean);
     const levelText = t.level.trim().replace(/^\+\s*/, "");
-    const level = /^\d{1,2}$/.test(levelText) ? Number(levelText) : undefined;
+    let level = /^\d{1,2}$/.test(levelText) ? Number(levelText) : undefined;
+    if (mainStatKey && (rarity === 4 || rarity === 5)) {
+      const observed = amountReadings.map((s) =>
+        Number(s.replace(/[,%]/g, "")),
+      );
+      const possible = Array.from(
+        { length: rarity === 5 ? 21 : 17 },
+        (_, i) => i,
+      ).filter((i) =>
+        observed.some((n) => n === displayMainValue(rarity, mainStatKey, i)),
+      );
+      if (level === undefined && possible.length === 1) level = possible[0];
+      else if (level !== undefined && !possible.includes(level))
+        level = undefined;
+    }
     const substats: Artifact["substats"] = [],
       unactivatedSubstats: Artifact["substats"] = [];
     for (const line of t.stats.trim().split(/\n+/)) {

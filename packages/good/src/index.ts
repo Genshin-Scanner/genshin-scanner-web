@@ -1,3 +1,4 @@
+import statValues from "./upstream/stat-values.json";
 import { z } from "zod";
 import { artifactSchema } from "./upstream/artifact";
 import {
@@ -24,6 +25,16 @@ const goodSchema = z.object({
 export type GoodFile = z.infer<typeof goodSchema>;
 export type Artifact = GoodFile["artifacts"][number];
 export type ArtifactDraft = Partial<Artifact>;
+
+export function displayMainValue(
+  rarity: 4 | 5,
+  key: Artifact["mainStatKey"],
+  level: number,
+) {
+  const raw = statValues.main[rarity][key][level];
+  if (raw === undefined) return;
+  return key.endsWith("_") ? Number((raw * 100).toFixed(1)) : Math.round(raw);
+}
 
 function unchanged(input: unknown, parsed: unknown): boolean {
   if (Object.is(input, parsed)) return true;
@@ -67,16 +78,34 @@ export function validateArtifact(draft: ArtifactDraft): string[] {
     issues.push("substats");
   const stats = [...active, ...inactive];
   const used = new Set<string>([artifact.mainStatKey]);
+  let totals = new Set([0]);
   for (const stat of stats) {
+    const options: Record<string, number[]> =
+      stat.key && artifact.rarity !== 3
+        ? statValues.rolls[artifact.rarity][stat.key]
+        : {};
+    const counts = options[String(stat.value)] ?? [];
+    if (active.includes(stat)) {
+      totals = new Set(
+        [...totals].flatMap((total) => counts.map((n) => total + n)),
+      );
+    } else if (!counts.includes(1)) issues.push("unactivatedSubstats");
     if (
       !stat.key ||
       stat.value <= 0 ||
+      !counts.length ||
       used.has(stat.key) ||
       (!stat.key.endsWith("_") && !Number.isInteger(stat.value))
     )
       issues.push("substats");
     used.add(stat.key);
   }
+  if (
+    ![...totals].some(
+      (n) => n >= range.low + upgrades && n <= range.high + upgrades,
+    )
+  )
+    issues.push("substats");
   if (stats.length > 4) issues.push("unactivatedSubstats");
   return [...new Set(issues)];
 }

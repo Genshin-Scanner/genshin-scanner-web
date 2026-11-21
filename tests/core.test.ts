@@ -18,3 +18,13 @@ test("keeps ambiguous levels and owners for review", () => {
   expect(draft.location).toBeUndefined();
   expect(draft.unactivatedSubstats).toEqual([{ key: "def", value: 23 }]);
 });
+test("checks the displayed main value against the level", () => {
+  const text = {
+    header: "Flower of Life\nHP",
+    mainValue: "4781",
+    level: "+0",
+    set: "The Exile",
+    stats: "DEF+17",
+  };
+  expect(english.parse(text, 5).level).toBeUndefined();
+});

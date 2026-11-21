@@ -8,6 +8,7 @@ import {
 export interface CardLayout {
   card: Rect;
   header: Rect;
+  mainValue: Rect;
   level: Rect;
   stats: Rect;
   set: Rect;
@@ -55,6 +56,25 @@ export const pcLayout: LayoutProfile = {
         const best = runs.reduce((a, b) => (b[1] - b[0] > a[1] - a[0] ? b : a));
         if (!bounds || best[1] - best[0] >= bounds[1] - bounds[0] - 4) {
           bounds = best;
+          titleY = y;
+        }
+      }
+    }
+    if (!bounds) {
+      // Lower-rarity cards keep the same paper panel and star strip.
+      const lowerTitle: ColorTest = (r, g, b) =>
+        (b > 110 && b > r * 1.35 && g > r * 1.1) ||
+        (g > 100 && g > r * 1.25 && g > b * 1.12) ||
+        (r > 95 && r < 155 && Math.max(r, g, b) - Math.min(r, g, b) < 11);
+      for (let y = Math.floor(h * 0.08); y < h * 0.21; y += 2) {
+        const run = bands(
+          left,
+          w,
+          (x) => matches(p, x, y, lowerTitle),
+          Math.floor(w * 0.16),
+        ).at(-1);
+        if (run && run[1] - run[0] < w * 0.4) {
+          bounds = run;
           titleY = y;
         }
       }
@@ -136,6 +156,7 @@ export const pcLayout: LayoutProfile = {
       rarity,
       lock: red > width * 0.025,
       header: rect(0.045, titleY + 3, 0.53, starRow[0] - titleY - 5),
+      mainValue: rect(0.045, bodyY - 0.22 * width, 0.48, 0.12 * width),
       level,
       stats: rect(
         0.058,

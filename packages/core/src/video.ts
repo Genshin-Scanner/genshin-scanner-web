@@ -1,6 +1,7 @@
 import { pcLayout, type LayoutProfile } from "./layout";
-import { type Pixels, type Rect } from "./pixels";
+import { bands, matches, type Pixels, type Rect } from "./pixels";
 export interface Mark {
+  rarity?: number;
   values: Uint8Array;
   column?: number;
   icon?: Uint8Array;
@@ -8,6 +9,7 @@ export interface Mark {
   quality: number;
 }
 export interface Segment {
+  rarity?: number;
   start: number;
   end: number;
   time: number;
@@ -84,10 +86,65 @@ export function markFrame(
   profile: LayoutProfile = pcLayout,
 ): Mark | undefined {
   const c = profile.locate(p);
-  if (!c || (c.rarity !== 4 && c.rarity !== 5)) return;
+  if (!c || c.rarity < 1 || c.rarity > 5) return;
   const values: number[] = [];
-  sample(p, c.thumbnail, 18, 20, values);
-  sample(p, c.stats, 72, 22, values);
+  // Re-anchor at the blank strip above the level badge. A one-pixel wobble in a tinted
+  // title or in the green letters would otherwise move every sample on compressed video.
+  const bodyY = Math.round(c.level.y - c.card.width * 0.042);
+  const strip = bands(
+    Math.floor(p.width * 0.5),
+    p.width,
+    (x) =>
+      matches(
+        p,
+        x,
+        bodyY + 2,
+        (r, g, b) =>
+          Math.abs(r - 234) < 15 &&
+          Math.abs(g - 227) < 15 &&
+          Math.abs(b - 216) < 15,
+      ),
+    Math.floor(p.width * 0.15),
+  ).at(-1);
+  if (!strip) return;
+  const [left, right] = strip,
+    w = right - left;
+  sample(
+    p,
+    {
+      x: left + w * 0.55,
+      y: bodyY - w * 0.44,
+      width: w * 0.44,
+      height: w * 0.42,
+    },
+    18,
+    20,
+    values,
+  );
+  sample(
+    p,
+    {
+      x: left + w * 0.05,
+      y: bodyY - w * 0.29,
+      width: w * 0.44,
+      height: w * 0.21,
+    },
+    24,
+    10,
+    values,
+  );
+  sample(
+    p,
+    {
+      x: left + w * 0.06,
+      y: bodyY + w * 0.14,
+      width: w * 0.91,
+      height: w * 0.34,
+    },
+    72,
+    22,
+    values,
+  );
   let sum = 0;
   for (let i = 1; i < values.length; i++)
     sum += Math.abs(values[i] - values[i - 1]);
@@ -105,6 +162,7 @@ export function markFrame(
     grid,
   );
   return {
+    rarity: c.rarity,
     grid: Uint8Array.from(grid),
     values: Uint8Array.from(values),
     quality: sum / values.length,
@@ -129,7 +187,7 @@ type Run = {
   mark: Mark;
   start: number;
   end: number;
-  count: number;
+  alternate?: number;
   time: number;
   quality: number;
 };
@@ -142,6 +200,7 @@ export class SegmentDetector {
     if (!mark) {
       this.pending = undefined;
       this.scrolling = true;
+      if (this.run && time - this.run.end > 1.5) return this.flush();
       return;
     }
     if (this.previousGrid && mark.grid) {
@@ -153,7 +212,10 @@ export class SegmentDetector {
     this.previousGrid = mark.grid;
     const update = (run: Run) => {
       run.end = time;
-      run.count++;
+      if (time - run.start >= 0.15 && run.alternate === undefined) {
+        run.alternate = time;
+        run.quality = -Infinity;
+      }
       if (mark.quality >= run.quality) {
         run.time = time;
         run.quality = mark.quality;
@@ -185,7 +247,7 @@ export class SegmentDetector {
         start: time,
         end: time,
         mark,
-        count: 1,
+
         time,
         quality: mark.quality,
       };
@@ -200,10 +262,11 @@ export class SegmentDetector {
   }
   private segment(run: Run): Segment {
     return {
+      rarity: run.mark.rarity,
       start: run.start,
       end: run.end,
       time: run.time,
-      alternate: run.start,
+      alternate: run.alternate ?? run.end,
     };
   }
   flush(): Segment | undefined {

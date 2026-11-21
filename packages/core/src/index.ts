@@ -6,7 +6,13 @@ import { crop, type Pixels } from "./pixels";
 export * from "./pixels";
 export * from "./layout";
 export * from "./english";
-export type Field = "header" | "level" | "stats" | "set" | "equipped";
+export type Field =
+  | "header"
+  | "mainValue"
+  | "level"
+  | "stats"
+  | "set"
+  | "equipped";
 export type Ocr = (image: Pixels, field: Field) => Promise<string>;
 export async function recognizeArtifact(
   frame: Pixels,
@@ -25,6 +31,7 @@ export async function recognizeArtifact(
   } as import("./english").Readings;
   for (const field of [
     "header",
+    "mainValue",
     "level",
     "stats",
     "set",
@@ -34,7 +41,7 @@ export async function recognizeArtifact(
     if (region) text[field] = await read(crop(frame, region), field);
   }
   const draft: ArtifactDraft = {
-    ...locale.parse(text),
+    ...locale.parse(text, card.rarity),
     rarity: card.rarity === 4 || card.rarity === 5 ? card.rarity : undefined,
     lock: card.lock,
   };
