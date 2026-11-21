@@ -16,7 +16,8 @@
     "format:check": "prettier --check .",
     "check": "bun run test && bun run format:check && bun run typecheck && bun run build",
     "check:frames": "bun scripts/check-frames.ts",
-    "ocr:assets": "bun scripts/ocr-assets.ts"
+    "ocr:assets": "bun scripts/ocr-assets.ts",
+    "check:video": "bun scripts/check-video.ts"
   },
   "devDependencies": {
     "prettier": "3.6.2",

@@ -46,3 +46,4 @@ export async function recognizeArtifact(
   };
 }
 export { prepareText } from "./prepare";
+export * from "./video";
