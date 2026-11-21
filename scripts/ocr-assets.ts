@@ -25,3 +25,8 @@ copyFileSync(
 );
 copyFileSync(join(tess, "LICENSE.md"), join(out, "LICENSE-Tesseract.txt"));
 copyFileSync(join(core, "LICENSE"), join(out, "LICENSE-core.txt"));
+copyFileSync(
+  resolve("packages/good/src/upstream/LICENSE"),
+  join(out, "LICENSE-Optimizer.txt"),
+);
+copyFileSync(resolve("packages/browser/OCR.md"), join(out, "MODEL-NOTICE.txt"));

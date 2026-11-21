@@ -7,7 +7,7 @@
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
-    "types": ["bun"],
+    "types": ["bun", "vite/client"],
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
