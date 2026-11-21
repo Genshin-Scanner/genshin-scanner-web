@@ -1,0 +1,12 @@
+{
+  "name": "@scanner/good",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "types": "./src/index.ts",
+    "default": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  }
+}

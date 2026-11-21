@@ -1,0 +1,12 @@
+{
+  "name": "@scanner/core",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "types": "./src/index.ts",
+    "default": "./src/index.ts"
+  },
+  "dependencies": {
+    "@scanner/good": "workspace:*"
+  }
+}

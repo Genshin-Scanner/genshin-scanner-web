@@ -1,0 +1,12 @@
+{
+  "name": "@scanner/web",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@scanner/browser": "workspace:*",
+    "@scanner/core": "workspace:*",
+    "@scanner/good": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

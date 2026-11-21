@@ -1,0 +1,15 @@
+{
+  "name": "@scanner/browser",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "types": "./src/index.ts",
+    "default": "./src/index.ts"
+  },
+  "dependencies": {
+    "@scanner/core": "workspace:*",
+    "@scanner/good": "workspace:*",
+    "tesseract.js": "6.0.1",
+    "@tesseract.js-data/eng": "1.0.0"
+  }
+}
