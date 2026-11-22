@@ -13,7 +13,7 @@ export function ReviewSummary({
   skipped,
   complete,
   save,
-}: ReviewSummaryProps) {
+}: Readonly<ReviewSummaryProps>) {
   const { t } = useTranslation();
 
   const included = rows.filter((row) => !row.excluded);

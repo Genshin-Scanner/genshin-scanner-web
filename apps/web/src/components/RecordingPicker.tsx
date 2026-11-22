@@ -20,7 +20,7 @@ export function RecordingPicker({
   skipped,
   start,
   cancel,
-}: RecordingPickerProps) {
+}: Readonly<RecordingPickerProps>) {
   const { t } = useTranslation();
 
   const input = useRef<HTMLInputElement>(null);
@@ -35,7 +35,7 @@ export function RecordingPicker({
         accept={recordingAccept}
         aria-label={t("chooseRecording")}
         onChange={(e) => {
-          void start(e.target.files?.[0]);
+          start(e.target.files?.[0]);
           e.target.value = "";
         }}
       />
@@ -49,7 +49,7 @@ export function RecordingPicker({
         onDrop={(e) => {
           e.preventDefault();
           setDrag(false);
-          void start(e.dataTransfer.files[0]);
+          start(e.dataTransfer.files[0]);
         }}
       >
         <div
@@ -70,7 +70,7 @@ export function RecordingPicker({
                 max={progress.total || undefined}
                 value={progress.total ? progress.done : undefined}
               />
-              <div role="status">
+              <output>
                 {t(
                   progress.phase === "Preparing recording"
                     ? "preparing"
@@ -82,10 +82,10 @@ export function RecordingPicker({
                   " · " +
                     Math.round((progress.done / progress.total) * 100) +
                     "%"}
-              </div>
+              </output>
             </>
           )}
-          {status && <div role="status">{t(status, { total: skipped })}</div>}
+          {status && <output>{t(status, { total: skipped })}</output>}
         </div>
         {progress ? (
           <button

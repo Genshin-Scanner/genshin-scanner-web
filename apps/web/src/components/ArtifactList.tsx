@@ -8,7 +8,7 @@ interface ArtifactListProps {
   select: (index: number) => void;
 }
 
-export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
+export function ArtifactList({ rows, selected, select }: Readonly<ArtifactListProps>) {
   const { t, i18n } = useTranslation();
   const labels = gameLabels(i18n.resolvedLanguage);
 
@@ -50,7 +50,7 @@ export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
                 ·{" "}
                 {r.excluded
                   ? t("excluded")
-                  : r.issues.length
+                  : r.issues.length === 0
                     ? t("review")
                     : t("ready")}
               </small>

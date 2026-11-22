@@ -18,7 +18,7 @@ export function App() {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto my-9 max-w-[1100px] px-4 pb-16 sm:my-16 sm:px-7">
+      <main className="mx-auto my-9 max-w-275 px-4 pb-16 sm:my-16 sm:px-7">
         <h1 className="font-serif text-[clamp(2.5rem,6vw,4.5rem)] leading-tight tracking-tight text-emerald-950">
           {t("title")}
         </h1>

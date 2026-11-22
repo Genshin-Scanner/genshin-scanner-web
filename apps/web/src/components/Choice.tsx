@@ -9,14 +9,14 @@ export function Choice<Key extends string>({
   issue,
   optionLabel,
   onChange,
-}: {
+}: Readonly<{
   label: string;
   issue?: string;
   value?: string;
   options: readonly Key[];
   optionLabel?: (key: Key) => string;
   onChange: (value: Key) => void;
-}) {
+}>) {
   const { t } = useTranslation();
 
   const hintId = useId();

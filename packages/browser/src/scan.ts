@@ -63,8 +63,9 @@ export async function scanVideo(
   signal: AbortSignal,
   progress: (p: ScanProgress) => void,
   onItem: (i: ScanItem) => void,
-  profile: ScanProfile = { locale: english, layout: pcLayout, mark: markFrame },
+  profile?: ScanProfile,
 ) {
+  profile ??= { locale: english, layout: pcLayout, mark: markFrame };
   const { video, seek, close } = await openRecording(file, signal, () =>
     progress({ phase: "Preparing recording", done: 0, total: 0 }),
   );

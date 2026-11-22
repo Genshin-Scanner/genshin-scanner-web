@@ -18,11 +18,11 @@ export function Editor({
   row,
   update,
   toggle,
-}: {
+}: Readonly<{
   row: Row;
   update: (d: ArtifactDraft) => void;
   toggle: () => void;
-}) {
+}>) {
   const { t, i18n } = useTranslation();
   const labels = gameLabels(i18n.resolvedLanguage);
 
@@ -121,9 +121,7 @@ export function Editor({
         <Choice
           label={t("lock")}
           issue={fieldIssue("lock")}
-          value={
-            a.lock === undefined ? undefined : a.lock ? "Locked" : "Unlocked"
-          }
+          value={a.lock ? "Locked" : "Unlocked"}
           options={["Locked", "Unlocked"]}
           optionLabel={(value) => t(value === "Locked" ? "locked" : "unlocked")}
           onChange={(v) => patch("lock", v === "Locked")}

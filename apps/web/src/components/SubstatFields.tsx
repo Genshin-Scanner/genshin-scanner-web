@@ -16,7 +16,7 @@ export function SubstatFields({
   stats,
   onChange,
   issues,
-}: SubstatFieldsProps) {
+}: Readonly<SubstatFieldsProps>) {
   const { t, i18n } = useTranslation();
   const labels = gameLabels(i18n.resolvedLanguage);
 
@@ -41,7 +41,7 @@ export function SubstatFields({
         <div
           data-stat-row
           className="my-2 grid grid-cols-[minmax(0,1fr)_minmax(4rem,0.55fr)_auto] items-end gap-2"
-          key={i}
+          key={s.key}
         >
           <Choice
             label={t("statRow", { number: i + 1 })}

@@ -70,6 +70,7 @@ For another browser, use e.g. `bun run check:browser firefox`. The optional argu
 - [x] Support video formats and codecs beyond MP4 and H.264.
 - [ ] Verify the full workflow in Safari on macOS and with footage recorded in a native 16:9 game layout.
 - [ ] Add a layout profile for recordings from the mobile game.
+- [ ] Automate GOOD package schema update (load JSON schemas from GO upstream)
 
 ## License
 

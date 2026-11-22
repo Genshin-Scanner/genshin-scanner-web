@@ -20,17 +20,16 @@ export async function openBrowserOcr(assetBase: URL, language = "eng") {
       0,
       0,
     );
+    let tessedit_char_whitelist = "+0123456789";
+    if (field !== "level") {
+      tessedit_char_whitelist = field === "mainValue" ? "0123456789,.%" : "";
+    }
     await worker.setParameters({
       tessedit_pageseg_mode:
         field === "header" || field === "stats"
           ? PSM.SINGLE_BLOCK
           : PSM.SINGLE_LINE,
-      tessedit_char_whitelist:
-        field === "level"
-          ? "+0123456789"
-          : field === "mainValue"
-            ? "0123456789,.%"
-            : "",
+      tessedit_char_whitelist,
     });
     return (await worker.recognize(canvas)).data.text;
   };
