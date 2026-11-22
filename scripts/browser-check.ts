@@ -43,13 +43,11 @@ try {
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("lang"), "ru");
     await page.getByLabel("Язык интерфейса").selectOption("en");
-    const codec = await page.evaluate(() =>
-      document
-        .createElement("video")
-        .canPlayType("video/mp4; codecs=avc1.640033"),
+    console.log(
+      engine,
+      browser.version(),
+      process.argv[3] ?? "test-assets/count-33.mp4",
     );
-    console.log(engine, "H.264 playback:", codec || "unavailable");
-    assert.ok(codec, "No H.264 decoder available in this browser environment");
     const started = Date.now();
     const input = page.locator("input[type=file]");
     await input.setInputFiles(process.argv[3] ?? "test-assets/count-33.mp4");
@@ -66,11 +64,15 @@ try {
           { cause: e },
         );
       });
-    await input.setInputFiles(process.argv[3] ?? "test-assets/count-33.mp4");
+    const expectRemux = process.argv.includes("--expect-remux");
+    await Promise.all([
+      expectRemux && page.locator("progress:not([value])").waitFor(),
+      input.setInputFiles(process.argv[3] ?? "test-assets/count-33.mp4"),
+    ]);
     await page.waitForFunction(
       () => {
         const s = document.querySelector("[role=status]")?.textContent;
-        return s && !s.includes("%");
+        return s && !document.querySelector("progress");
       },
       undefined,
       { timeout: 600000 },
@@ -87,7 +89,9 @@ try {
       "cards",
       await page.getByTestId("review-counts").textContent(),
     );
-    const repeats = Number(process.argv[4] ?? 1);
+    const repeats = Number(
+      process.argv[4] === "--expect-remux" ? 1 : (process.argv[4] ?? 1),
+    );
     assert.ok(Number.isInteger(repeats) && repeats > 0);
     assert.equal(count, 33 * repeats);
     const singlePass: import("../packages/good/src").Artifact[] = JSON.parse(

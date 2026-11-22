@@ -1,3 +1,4 @@
+import { recordingAccept } from "@scanner/browser";
 import { useTranslation } from "react-i18next";
 import type { ScanStatus } from "../useRecordingScan";
 import { useState, useRef } from "react";
@@ -31,7 +32,7 @@ export function RecordingPicker({
         ref={input}
         hidden
         type="file"
-        accept="video/mp4,.mp4"
+        accept={recordingAccept}
         aria-label={t("chooseRecording")}
         onChange={(e) => {
           void start(e.target.files?.[0]);
@@ -66,12 +67,21 @@ export function RecordingPicker({
             <>
               <progress
                 className="w-full accent-emerald-800"
-                max={progress.total}
-                value={progress.done}
+                max={progress.total || undefined}
+                value={progress.total ? progress.done : undefined}
               />
               <div role="status">
-                {t(progress.phase === "Finding cards" ? "finding" : "reading")}{" "}
-                · {Math.round((progress.done / progress.total) * 100)}%
+                {t(
+                  progress.phase === "Preparing recording"
+                    ? "preparing"
+                    : progress.phase === "Finding cards"
+                      ? "finding"
+                      : "reading",
+                )}
+                {progress.total > 0 &&
+                  " · " +
+                    Math.round((progress.done / progress.total) * 100) +
+                    "%"}
               </div>
             </>
           )}

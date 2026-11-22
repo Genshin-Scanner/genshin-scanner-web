@@ -5,7 +5,7 @@
   "intro": "Choose a recording of your inventory to review its artifacts and export them to Genshin Optimizer.",
   "chooseRecording": "Choose recording",
   "recording": "Inventory recording",
-  "formats": "MP4 · H.264 · English PC inventory · 4★ and 5★",
+  "formats": "MP4, WebM, MKV · English PC inventory · 4★ and 5★",
   "finding": "Finding cards",
   "reading": "Reading cards",
   "cancel": "Cancel scan",
@@ -17,7 +17,7 @@
   "unsupported": "Skipped unsupported artifacts: {{total}}.",
   "empty": "No supported artifact cards found. Check the game language and recording layout.",
   "failed": "Unable to scan the recording.",
-  "decode": "This browser could not decode the recording. Choose MP4 with H.264 video.",
+  "decode": "This browser could not decode the video track. Try a browser with this codec or export the recording as H.264 MP4.",
   "timeout": "Video decoder timed out.",
   "canvas": "Canvas 2D is unavailable in this browser.",
   "track": "The recording has no readable video track.",
@@ -55,5 +55,9 @@
   "invalid": "Check this value against the recording.",
   "invalidGroup": "Check the number of stats and their rolls for this level and rarity.",
   "invalidStat": "Choose a stat different from the main stat and other substats.",
-  "invalidRoll": "Enter a valid roll value for this rarity."
+  "invalidRoll": "Enter a valid roll value for this rarity.",
+  "seek": "The browser could not seek in this recording. Try a finalized copy with a duration and seek index.",
+  "container": "The recording could not be repackaged. Check that the file is complete.",
+  "codec": "The video codec or its configuration cannot be repackaged. Try H.264 MP4.",
+  "preparing": "Preparing a seekable video on this device"
 }

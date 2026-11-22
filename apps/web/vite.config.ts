@@ -1,4 +1,8 @@
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 
-export default defineConfig({ base: "./", plugins: [tailwindcss()] });
+export default defineConfig({
+  base: "./",
+  build: { license: { fileName: "licenses.md" } },
+  plugins: [tailwindcss()],
+});

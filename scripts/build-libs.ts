@@ -13,7 +13,10 @@ for (const name of ["good", "core", "browser"]) {
       },
       rollupOptions: {
         external: (id) =>
-          id.startsWith("@scanner/") || id === "zod" || id === "tesseract.js",
+          id.startsWith("@scanner/") ||
+          id === "zod" ||
+          id === "tesseract.js" ||
+          id === "mediabunny",
       },
     },
   });

@@ -11,7 +11,8 @@
   "dependencies": {
     "@scanner/core": "workspace:*",
     "@scanner/good": "workspace:*",
-    "tesseract.js": "6.0.1",
-    "@tesseract.js-data/eng": "1.0.0"
+    "@tesseract.js-data/eng": "1.0.0",
+    "mediabunny": "^1.66.2",
+    "tesseract.js": "6.0.1"
   }
 }

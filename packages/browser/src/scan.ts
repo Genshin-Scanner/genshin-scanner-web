@@ -14,6 +14,7 @@ import {
   type Rect,
 } from "@scanner/core";
 import type { ArtifactDraft } from "@scanner/good";
+import { openRecording } from "./recording";
 import { openBrowserOcr } from "./ocr";
 export interface ScanProfile {
   locale: LocaleProfile;
@@ -28,60 +29,10 @@ export interface ScanItem {
   detail: string;
 }
 export type ScanProgress = {
-  phase: "Finding cards" | "Reading cards";
+  phase: "Preparing recording" | "Finding cards" | "Reading cards";
   done: number;
   total: number;
 };
-function videoEvent(
-  video: HTMLVideoElement,
-  event: string,
-  signal: AbortSignal,
-  action: () => void,
-) {
-  signal.throwIfAborted();
-  return new Promise<void>((resolve, reject) => {
-    const listeners = new AbortController();
-    const cleanup = () => {
-      listeners.abort();
-      signal.removeEventListener("abort", cancel);
-      clearTimeout(timer);
-    };
-    const fail = (err: unknown) => {
-      cleanup();
-      reject(err);
-    };
-    const cancel = () => fail(signal.reason);
-    const timer = setTimeout(
-      () => fail(new ScanError("timeout", "Video decoder timed out.")),
-      30000,
-    );
-    signal.addEventListener("abort", cancel, { once: true });
-    video.addEventListener(
-      "error",
-      () =>
-        fail(
-          new ScanError(
-            "decode",
-            "This browser could not decode the recording. Choose MP4 with H.264 video.",
-          ),
-        ),
-      { signal: listeners.signal },
-    );
-    video.addEventListener(
-      event,
-      () => {
-        cleanup();
-        resolve();
-      },
-      { signal: listeners.signal },
-    );
-    try {
-      action();
-    } catch (e) {
-      fail(e);
-    }
-  });
-}
 function canvas(width: number, height: number) {
   const el = document.createElement("canvas");
   el.width = Math.max(1, Math.round(width));
@@ -114,33 +65,11 @@ export async function scanVideo(
   onItem: (i: ScanItem) => void,
   profile: ScanProfile = { locale: english, layout: pcLayout, mark: markFrame },
 ) {
-  const url = URL.createObjectURL(file),
-    video = document.createElement("video");
-  video.muted = true;
-  video.playsInline = true;
-  video.preload = "auto";
+  const { video, seek, close } = await openRecording(file, signal, () =>
+    progress({ phase: "Preparing recording", done: 0, total: 0 }),
+  );
   let ocr: Awaited<ReturnType<typeof openBrowserOcr>> | undefined;
   try {
-    await videoEvent(video, "loadeddata", signal, () => {
-      video.src = url;
-      video.load();
-    });
-    if (
-      !Number.isFinite(video.duration) ||
-      video.duration <= 0 ||
-      !video.videoWidth
-    )
-      throw new ScanError(
-        "track",
-        "The recording has no readable video track.",
-      );
-    const seek = async (time: number) => {
-      signal.throwIfAborted();
-      if (Math.abs(time - video.currentTime) > 0.0001)
-        await videoEvent(video, "seeked", signal, () => {
-          video.currentTime = time;
-        });
-    };
     const width = Math.min(video.videoWidth, 960),
       small = canvas(width, (video.videoHeight * width) / video.videoWidth);
     const detected: Segment[] = [];
@@ -225,9 +154,7 @@ export async function scanVideo(
     }
     return skipped;
   } finally {
-    video.removeAttribute("src");
-    video.load();
-    URL.revokeObjectURL(url);
+    close();
     await ocr?.close();
   }
 }
