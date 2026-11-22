@@ -23,4 +23,4 @@ On a 2 minute 49 second recording made by repeating the 16:9 clip three times, E
 
 ## Components
 
-`@scanner/core` accepts pixels and an OCR function and builds without DOM types. `@scanner/good` provides types and validation from the pinned Optimizer schema and roll tables. `@scanner/browser` reads local video sequentially, handles cancellation, and runs the OCR worker. A profile supplies the language, layout, and item-change detector. The React UI lives in `apps/web`. See the [v1 architecture and acceptance criteria](v1-ARCHITECTURE.md).
+`@scanner/core` accepts pixels and an OCR function and builds without DOM types. `@scanner/good` provides types and validation from the pinned Optimizer schema and roll tables. `@scanner/browser` reads local video sequentially, handles cancellation, and runs the OCR worker. A profile supplies the language, layout, and item-change detector. The React UI uses Tailwind CSS utilities and lives in `apps/web`. See the [v1 architecture and acceptance criteria](v1-ARCHITECTURE.md).

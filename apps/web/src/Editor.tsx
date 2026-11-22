@@ -20,9 +20,10 @@ function Choice({
   onChange: (v: string) => void;
 }) {
   return (
-    <label>
+    <label className="grid min-w-0 gap-1 text-sm text-stone-700">
       {label}
       <select
+        className="w-full min-w-0 rounded border border-stone-400 bg-white p-1.5"
         aria-label={label}
         value={value ?? "?"}
         onChange={(e) => onChange(e.target.value)}
@@ -56,22 +57,27 @@ export function Editor({
     update({ ...a, [key]: value });
   }
   return (
-    <article>
-      <div className="editor-title">
-        <h2>Artifact details</h2>
-        <button onClick={toggle}>
+    <article className="rounded-xl border border-stone-300 bg-white p-4 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold">Artifact details</h2>
+        <button
+          className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
+          onClick={toggle}
+        >
           {row.excluded ? "Include artifact" : "Exclude artifact"}
         </button>
       </div>
       <img
-        className="card-preview"
+        className="mx-auto my-4 max-h-80 max-w-full object-contain"
         src={row.detail}
         alt="Recorded item panel"
       />
       {row.issues.length > 0 && (
-        <p className="notice">Check {row.issues.join(", ")}</p>
+        <p className="mb-3 rounded-md bg-amber-100 p-2 text-amber-950">
+          Check {row.issues.join(", ")}
+        </p>
       )}
-      <div className="fields">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Choice
           label="Set"
           value={a.setKey}
@@ -96,9 +102,10 @@ export function Editor({
           options={["4", "5"]}
           onChange={(v) => patch("rarity", Number(v) as 4 | 5)}
         />
-        <label>
+        <label className="grid min-w-0 gap-1 text-sm text-stone-700">
           Level
           <input
+            className="w-full min-w-0 rounded border border-stone-400 bg-white p-1.5"
             type="number"
             min="0"
             max={a.rarity === 4 ? 16 : 20}
@@ -130,9 +137,15 @@ export function Editor({
         const stats = a[key] ?? [];
         return (
           <section key={key}>
-            <h3>{key === "substats" ? "Substats" : "Unactivated substats"}</h3>
+            <h3 className="mt-5 font-semibold">
+              {key === "substats" ? "Substats" : "Unactivated substats"}
+            </h3>
             {stats.map((s, i) => (
-              <div className="stat" key={i}>
+              <div
+                data-stat-row
+                className="my-2 grid grid-cols-[minmax(0,1fr)_minmax(4rem,0.55fr)_auto] items-end gap-2"
+                key={i}
+              >
                 <Choice
                   label={"Stat " + (i + 1)}
                   value={s.key || undefined}
@@ -146,9 +159,10 @@ export function Editor({
                     )
                   }
                 />
-                <label>
+                <label className="grid min-w-0 gap-1 text-sm text-stone-700">
                   Value
                   <input
+                    className="w-full min-w-0 rounded border border-stone-400 bg-white p-1.5"
                     type="number"
                     step="any"
                     value={s.value || ""}
@@ -165,6 +179,7 @@ export function Editor({
                   />
                 </label>
                 <button
+                  className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
                   aria-label={"Remove " + key + " " + (i + 1)}
                   onClick={() =>
                     patch(
@@ -179,6 +194,7 @@ export function Editor({
             ))}
             {stats.length < 4 && (
               <button
+                className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
                 onClick={() => patch(key, [...stats, { key: "", value: 0 }])}
               >
                 Add stat

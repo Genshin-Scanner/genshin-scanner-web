@@ -1,2 +1,4 @@
 import { defineConfig } from "vite";
-export default defineConfig({ base: "./" });
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({ base: "./", plugins: [tailwindcss()] });

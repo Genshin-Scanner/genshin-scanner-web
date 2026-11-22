@@ -69,7 +69,7 @@ try {
     );
     const status = await page.getByRole("status").textContent();
     assert.equal(status, "Scan complete");
-    const tiles = page.locator("nav .tile");
+    const tiles = page.locator("nav button[data-order]");
     const count = await tiles.count();
     console.log(
       engine,
@@ -77,7 +77,7 @@ try {
       "detected",
       count,
       "cards",
-      await page.locator(".summary p").textContent(),
+      await page.getByTestId("review-counts").textContent(),
     );
     const repeats = Number(process.argv[4] ?? 1);
     assert.ok(Number.isInteger(repeats) && repeats > 0);
@@ -116,7 +116,7 @@ try {
           has: page.getByRole("heading", { name: heading, exact: true }),
         });
         const desired = card[key] ?? [];
-        const controls = section.locator(".stat");
+        const controls = section.locator("[data-stat-row]");
         while ((await controls.count()) > desired.length)
           await controls.last().getByRole("button").click();
         while ((await controls.count()) < desired.length)

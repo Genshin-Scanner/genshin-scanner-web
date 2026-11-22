@@ -76,15 +76,23 @@ function App() {
   const row = rows[selected];
   return (
     <>
-      <header>
-        <div className="brand">
-          <span aria-hidden="true">✧</span> Inventory Scanner
+      <header className="flex min-h-18 items-center justify-between gap-3 border-b border-stone-300 bg-stone-50 px-6 text-stone-600 sm:px-[6vw]">
+        <div className="font-bold tracking-tight text-emerald-950">
+          <span
+            aria-hidden="true"
+            className="mr-2 align-middle text-3xl text-amber-700"
+          >
+            ✧
+          </span>{" "}
+          Inventory Scanner
         </div>
         <span>Genshin Impact</span>
       </header>
-      <main>
-        <h1>Scan your artifacts</h1>
-        <p className="intro">
+      <main className="mx-auto my-9 max-w-[1100px] px-4 pb-16 sm:my-16 sm:px-7">
+        <h1 className="font-serif text-[clamp(2.5rem,6vw,4.5rem)] leading-tight tracking-tight text-emerald-950">
+          Scan your artifacts
+        </h1>
+        <p className="mt-4 mb-8 max-w-2xl text-lg text-stone-600">
           Choose a recording of your inventory to review its artifacts and
           export them to Genshin Optimizer.
         </p>
@@ -100,7 +108,7 @@ function App() {
           }}
         />
         <section
-          className={"drop " + (drag ? "drag" : "")}
+          className={`flex flex-wrap items-center gap-5 rounded-xl border border-dashed border-stone-400 p-5 sm:p-8 ${drag ? "bg-emerald-50" : "bg-white"}`}
           onDragOver={(e) => {
             e.preventDefault();
             setDrag(true);
@@ -112,15 +120,26 @@ function App() {
             void start(e.dataTransfer.files[0]);
           }}
         >
-          <div className="film" aria-hidden="true">
+          <div
+            className="hidden size-14 shrink-0 place-items-center rounded-xl bg-emerald-100 text-3xl text-emerald-900 sm:grid"
+            aria-hidden="true"
+          >
             ▷
           </div>
-          <div className="upload">
-            <h2>{filename || "Inventory recording"}</h2>
-            <p>MP4 · H.264 · English PC inventory · 4★ and 5★</p>
+          <div className="min-w-0 flex-1 basis-52">
+            <h2 className="text-xl font-semibold wrap-anywhere">
+              {filename || "Inventory recording"}
+            </h2>
+            <p className="text-sm text-stone-600">
+              MP4 · H.264 · English PC inventory · 4★ and 5★
+            </p>
             {progress && (
               <>
-                <progress max={progress.total} value={progress.done} />
+                <progress
+                  className="w-full accent-emerald-800"
+                  max={progress.total}
+                  value={progress.done}
+                />
                 <div role="status">
                   {progress.phase} ·{" "}
                   {Math.round((progress.done / progress.total) * 100)}%
@@ -130,27 +149,42 @@ function App() {
             {status && <div role="status">{status}</div>}
           </div>
           {busy ? (
-            <button onClick={() => active.current?.abort()}>Cancel scan</button>
+            <button
+              className="cursor-pointer rounded-md border border-stone-300 px-4 py-2 hover:bg-stone-100"
+              onClick={() => active.current?.abort()}
+            >
+              Cancel scan
+            </button>
           ) : (
-            <button className="primary" onClick={() => input.current?.click()}>
+            <button
+              className="cursor-pointer rounded-md bg-emerald-900 px-5 py-3 font-medium text-white hover:bg-emerald-800 disabled:cursor-default disabled:opacity-45"
+              onClick={() => input.current?.click()}
+            >
               {filename ? "Choose another file" : "Choose video"}
             </button>
           )}
         </section>
-        <small>Video processing stays on this device.</small>
+        <small className="mt-2 block text-sm text-stone-600">
+          Video processing stays on this device.
+        </small>
         {!!rows.length && (
           <>
-            <div className="summary">
+            <div className="mt-10 mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2>Scanned artifacts</h2>
-                <p>
+                <h2 className="text-xl font-semibold wrap-anywhere">
+                  Scanned artifacts
+                </h2>
+                <p
+                  data-testid="review-counts"
+                  className="text-sm text-stone-600"
+                >
                   {included.length} included · {flagged.length} to review ·{" "}
                   {rows.length - included.length} excluded · {skipped}{" "}
                   unsupported
                 </p>
               </div>
               <button
-                className="primary"
+                className="cursor-pointer rounded-md bg-emerald-900 px-5 py-3 font-medium text-white hover:bg-emerald-800 disabled:cursor-default disabled:opacity-45"
                 disabled={
                   status !== "Scan complete" ||
                   !!flagged.length ||
@@ -161,8 +195,11 @@ function App() {
                 Export GOOD
               </button>
             </div>
-            <div className="work">
-              <nav aria-label="Scanned artifacts">
+            <div className="grid items-start gap-5 md:grid-cols-[minmax(14rem,0.85fr)_minmax(20rem,1.6fr)]">
+              <nav
+                className="max-h-64 overflow-auto rounded-xl border border-stone-300 bg-white p-2 md:max-h-[80vh]"
+                aria-label="Scanned artifacts"
+              >
                 {rows
                   .map((r, i) => ({ r, i }))
                   .sort(
@@ -172,17 +209,21 @@ function App() {
                   )
                   .map(({ r, i }) => (
                     <button
-                      className={"tile " + (i === selected ? "chosen" : "")}
+                      className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-stone-100 aria-pressed:bg-emerald-100"
                       key={i}
                       data-order={i}
                       aria-pressed={i === selected}
                       onClick={() => select(i)}
                     >
-                      <img src={r.image} alt="" />
-                      <span>
+                      <img
+                        className="size-12 shrink-0 rounded-md object-cover"
+                        src={r.image}
+                        alt=""
+                      />
+                      <span className="text-sm font-semibold">
                         {r.draft.setKey?.replace(/([a-z])([A-Z])/g, "$1 $2") ||
                           "Unidentified artifact"}
-                        <small>
+                        <small className="block text-xs font-normal text-stone-600">
                           {r.time.toFixed(1)} s ·{" "}
                           {r.excluded
                             ? "Excluded"
