@@ -1,10 +1,13 @@
+import { useTranslation } from "react-i18next";
+import type { ScanStatus } from "../useRecordingScan";
 import { useState, useRef } from "react";
 import type { ScanProgress } from "@scanner/browser";
 
 interface RecordingPickerProps {
   filename: string;
   progress?: ScanProgress;
-  status: string;
+  skipped: number;
+  status: ScanStatus;
   start: (file?: File) => void;
   cancel: () => void;
 }
@@ -13,9 +16,12 @@ export function RecordingPicker({
   filename,
   progress,
   status,
+  skipped,
   start,
   cancel,
 }: RecordingPickerProps) {
+  const { t } = useTranslation();
+
   const input = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
 
@@ -26,7 +32,7 @@ export function RecordingPicker({
         hidden
         type="file"
         accept="video/mp4,.mp4"
-        aria-label="Choose recording"
+        aria-label={t("chooseRecording")}
         onChange={(e) => {
           void start(e.target.files?.[0]);
           e.target.value = "";
@@ -53,11 +59,9 @@ export function RecordingPicker({
         </div>
         <div className="min-w-0 flex-1 basis-52">
           <h2 className="text-xl font-semibold wrap-anywhere">
-            {filename || "Inventory recording"}
+            {filename || t("recording")}
           </h2>
-          <p className="text-sm text-stone-600">
-            MP4 · H.264 · English PC inventory · 4★ and 5★
-          </p>
+          <p className="text-sm text-stone-600">{t("formats")}</p>
           {progress && (
             <>
               <progress
@@ -66,31 +70,31 @@ export function RecordingPicker({
                 value={progress.done}
               />
               <div role="status">
-                {progress.phase} ·{" "}
-                {Math.round((progress.done / progress.total) * 100)}%
+                {t(progress.phase === "Finding cards" ? "finding" : "reading")}{" "}
+                · {Math.round((progress.done / progress.total) * 100)}%
               </div>
             </>
           )}
-          {status && <div role="status">{status}</div>}
+          {status && <div role="status">{t(status, { total: skipped })}</div>}
         </div>
         {progress ? (
           <button
             className="cursor-pointer rounded-md border border-stone-300 px-4 py-2 hover:bg-stone-100"
             onClick={cancel}
           >
-            Cancel scan
+            {t("cancel")}
           </button>
         ) : (
           <button
             className="cursor-pointer rounded-md bg-emerald-900 px-5 py-3 font-medium text-white hover:bg-emerald-800 disabled:cursor-default disabled:opacity-45"
             onClick={() => input.current?.click()}
           >
-            {filename ? "Choose another file" : "Choose video"}
+            {filename ? t("another") : t("chooseVideo")}
           </button>
         )}
       </section>
       <small className="mt-2 block text-sm text-stone-600">
-        Video processing stays on this device.
+        {t("privacy")}
       </small>
     </>
   );

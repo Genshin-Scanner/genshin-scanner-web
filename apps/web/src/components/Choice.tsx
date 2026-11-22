@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useId } from "react";
 import { FieldHint } from "./FieldHint";
 
@@ -6,14 +7,18 @@ export function Choice({
   value,
   options,
   issue,
+  optionLabel,
   onChange,
 }: {
   label: string;
   issue?: string;
   value?: string;
   options: readonly string[];
+  optionLabel?: (key: string) => string;
   onChange: (v: string) => void;
 }) {
+  const { t } = useTranslation();
+
   const hintId = useId();
 
   return (
@@ -28,11 +33,11 @@ export function Choice({
         onChange={(e) => onChange(e.target.value)}
       >
         <option value="?" disabled>
-          Choose…
+          {t("choose")}
         </option>
         {options.map((k) => (
           <option key={k} value={k}>
-            {k || "Unequipped"}
+            {optionLabel?.(k) ?? (k || t("unequipped"))}
           </option>
         ))}
       </select>

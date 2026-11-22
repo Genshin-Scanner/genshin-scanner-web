@@ -1,3 +1,4 @@
+import { ScanError } from "./error";
 import { abortable } from "./abort";
 import {
   markFrame,
@@ -51,7 +52,7 @@ function videoEvent(
     };
     const cancel = () => fail(signal.reason);
     const timer = setTimeout(
-      () => fail(new Error("Video decoder timed out.")),
+      () => fail(new ScanError("timeout", "Video decoder timed out.")),
       30000,
     );
     signal.addEventListener("abort", cancel, { once: true });
@@ -59,7 +60,8 @@ function videoEvent(
       "error",
       () =>
         fail(
-          new Error(
+          new ScanError(
+            "decode",
             "This browser could not decode the recording. Choose MP4 with H.264 video.",
           ),
         ),
@@ -85,7 +87,7 @@ function canvas(width: number, height: number) {
   el.width = Math.max(1, Math.round(width));
   el.height = Math.max(1, Math.round(height));
   const ctx = el.getContext("2d", { willReadFrequently: true });
-  if (!ctx) throw new Error("Canvas 2D unavailable");
+  if (!ctx) throw new ScanError("canvas", "Canvas 2D unavailable");
   return ctx;
 }
 function preview(video: HTMLVideoElement, r: Rect, maxWidth: number) {
@@ -128,7 +130,10 @@ export async function scanVideo(
       video.duration <= 0 ||
       !video.videoWidth
     )
-      throw new Error("The recording has no readable video track.");
+      throw new ScanError(
+        "track",
+        "The recording has no readable video track.",
+      );
     const seek = async (time: number) => {
       signal.throwIfAborted();
       if (Math.abs(time - video.currentTime) > 0.0001)

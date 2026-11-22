@@ -1,3 +1,4 @@
+import { ScanError } from "./error";
 import { createWorker, PSM } from "tesseract.js";
 import { prepareText, type Ocr } from "@scanner/core";
 export async function openBrowserOcr(assetBase: URL, language = "eng") {
@@ -13,7 +14,7 @@ export async function openBrowserOcr(assetBase: URL, language = "eng") {
     canvas.width = p.width;
     canvas.height = p.height;
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas 2D unavailable");
+    if (!ctx) throw new ScanError("canvas", "Canvas 2D unavailable");
     ctx.putImageData(
       new ImageData(new Uint8ClampedArray(p.data), p.width, p.height),
       0,

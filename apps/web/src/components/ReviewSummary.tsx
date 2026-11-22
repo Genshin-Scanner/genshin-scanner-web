@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Row } from "../review";
 
 interface ReviewSummaryProps {
@@ -13,18 +14,22 @@ export function ReviewSummary({
   complete,
   save,
 }: ReviewSummaryProps) {
+  const { t } = useTranslation();
+
   const included = rows.filter((row) => !row.excluded);
   const flagged = included.filter((row) => row.issues.length);
 
   return (
     <div className="mt-10 mb-3 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-xl font-semibold wrap-anywhere">
-          Scanned artifacts
-        </h2>
+        <h2 className="text-xl font-semibold wrap-anywhere">{t("list")}</h2>
         <p data-testid="review-counts" className="text-sm text-stone-600">
-          {included.length} included · {flagged.length} to review ·{" "}
-          {rows.length - included.length} excluded · {skipped} unsupported
+          {t("counts", {
+            included: included.length,
+            flagged: flagged.length,
+            excluded: rows.length - included.length,
+            skipped,
+          })}
         </p>
       </div>
       <button
@@ -32,7 +37,7 @@ export function ReviewSummary({
         disabled={!complete || !!flagged.length || !included.length}
         onClick={save}
       >
-        Export GOOD
+        {t("export")}
       </button>
     </div>
   );

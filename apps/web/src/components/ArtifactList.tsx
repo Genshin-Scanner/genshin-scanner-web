@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Row } from "../review";
 
 interface ArtifactListProps {
@@ -7,10 +8,12 @@ interface ArtifactListProps {
 }
 
 export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
+  const { t, i18n } = useTranslation();
+
   return (
     <nav
       className="max-h-64 overflow-auto rounded-xl border border-stone-300 bg-white p-2 md:max-h-[80vh]"
-      aria-label="Scanned artifacts"
+      aria-label={t("list")}
     >
       {rows
         .map((r, i) => ({ r, i }))
@@ -35,10 +38,20 @@ export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
             />
             <span className="text-sm font-semibold">
               {r.draft.setKey?.replace(/([a-z])([A-Z])/g, "$1 $2") ||
-                "Unidentified artifact"}
+                t("unidentified")}
               <small className="block text-xs font-normal text-stone-600">
-                {r.time.toFixed(1)} s ·{" "}
-                {r.excluded ? "Excluded" : r.issues.length ? "Review" : "Ready"}
+                {t("timestamp", {
+                  time: r.time.toLocaleString(i18n.resolvedLanguage, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                  }),
+                })}{" "}
+                ·{" "}
+                {r.excluded
+                  ? t("excluded")
+                  : r.issues.length
+                    ? t("review")
+                    : t("ready")}
               </small>
             </span>
           </button>

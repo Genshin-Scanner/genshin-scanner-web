@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { allSubstatKeys, type Artifact } from "@scanner/good";
 import { NumberField } from "./NumberField";
 import { Choice } from "./Choice";
@@ -15,6 +16,8 @@ export function SubstatFields({
   onChange,
   issues,
 }: SubstatFieldsProps) {
+  const { t } = useTranslation();
+
   function changeStat(
     index: number,
     patch: Partial<Artifact["substats"][number]>,
@@ -27,11 +30,11 @@ export function SubstatFields({
   return (
     <section>
       <h3 className="mt-5 font-semibold">
-        {group === "substats" ? "Substats" : "Unactivated substats"}
+        {group === "substats" ? t("substats") : t("unactivatedSubstats")}
       </h3>
       {issues.includes(group) && (
         <p className="my-2 rounded border-l-4 border-amber-600 bg-amber-50 p-2 text-sm text-amber-950">
-          Check the number of stats and their rolls for this level and rarity.
+          {t("invalidGroup")}
         </p>
       )}
       {stats.map((s, i) => (
@@ -41,10 +44,10 @@ export function SubstatFields({
           key={i}
         >
           <Choice
-            label={"Stat " + (i + 1)}
+            label={t("statRow", { number: i + 1 })}
             issue={
               issues.includes(group + "." + i + ".key")
-                ? "Choose a stat different from the main stat and other substats."
+                ? t("invalidStat")
                 : undefined
             }
             value={s.key || undefined}
@@ -52,10 +55,10 @@ export function SubstatFields({
             onChange={(v) => changeStat(i, { key: v as typeof s.key })}
           />
           <NumberField
-            label="Value"
+            label={t("value")}
             issue={
               issues.includes(group + "." + i + ".value")
-                ? "Enter a valid roll value for this rarity."
+                ? t("invalidRoll")
                 : undefined
             }
             step="any"
@@ -66,7 +69,7 @@ export function SubstatFields({
           />
           <button
             className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
-            aria-label={"Remove " + group + " " + (i + 1)}
+            aria-label={t("remove", { group: t(group), number: i + 1 })}
             onClick={() => onChange(stats.filter((_, j) => j !== i))}
           >
             ×
@@ -78,7 +81,7 @@ export function SubstatFields({
           className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
           onClick={() => onChange([...stats, { key: "", value: 0 }])}
         >
-          Add stat
+          {t("add")}
         </button>
       )}
     </section>

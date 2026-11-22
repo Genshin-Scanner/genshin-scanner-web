@@ -1,6 +1,15 @@
 import { useRef, useState } from "react";
-import { scanVideo, type ScanProgress } from "@scanner/browser";
+import { ScanError, scanVideo, type ScanProgress } from "@scanner/browser";
 import type { Row } from "./review";
+
+export type ScanStatus =
+  | ""
+  | "complete"
+  | "cancelled"
+  | "unsupported"
+  | "empty"
+  | "failed"
+  | ScanError["code"];
 
 const assetBase = new URL(import.meta.env.BASE_URL + "ocr/", document.baseURI);
 
@@ -9,7 +18,7 @@ export function useRecordingScan() {
   const [rows, setRows] = useState<Row[]>([]);
   const [selected, select] = useState(0);
   const [progress, setProgress] = useState<ScanProgress>();
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<ScanStatus>("");
   const [skipped, setSkipped] = useState(0);
   const [filename, setFilename] = useState("");
 
@@ -36,20 +45,14 @@ export function useRecordingScan() {
         },
       );
       setSkipped(unsupported);
-      setStatus(
-        count
-          ? "Scan complete"
-          : unsupported
-            ? unsupported + " unsupported artifacts skipped."
-            : "No supported artifact cards found. Check the game language and recording layout.",
-      );
+      setStatus(count ? "complete" : unsupported ? "unsupported" : "empty");
     } catch (e) {
       setStatus(
         controller.signal.aborted
-          ? "Scan cancelled"
-          : e instanceof Error
-            ? e.message
-            : "Unable to scan recording",
+          ? "cancelled"
+          : e instanceof ScanError
+            ? e.code
+            : "failed",
       );
       if (controller.signal.aborted) setRows([]);
     } finally {

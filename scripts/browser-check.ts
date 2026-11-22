@@ -19,7 +19,7 @@ try {
       : {}),
   });
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({ locale: "en-US" });
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = host.resolvedUrls!.local[0];
@@ -35,6 +35,14 @@ try {
       throw new Error("Unexpected network request: " + url.origin);
     });
     await page.goto(base);
+    const language = page.getByRole("combobox", { name: "Interface language" });
+    await language.selectOption("ru");
+    await page
+      .getByRole("heading", { name: "Сканирование артефактов" })
+      .waitFor();
+    await page.reload();
+    assert.equal(await page.locator("html").getAttribute("lang"), "ru");
+    await page.getByLabel("Язык интерфейса").selectOption("en");
     const codec = await page.evaluate(() =>
       document
         .createElement("video")
@@ -87,6 +95,30 @@ try {
     );
     const expected = Array.from({ length: repeats }, () => singlePass).flat();
     await tiles.first().click();
+    const flaggedTile = page.locator('nav [data-review="true"]').first();
+    if (await flaggedTile.count()) {
+      const flaggedOrder = await flaggedTile.getAttribute("data-order");
+      await flaggedTile.click();
+      assert.equal(await flaggedTile.getAttribute("data-review"), "true");
+      assert.ok(
+        (await page
+          .locator('article [aria-invalid="true"], article section p')
+          .count()) > 0,
+      );
+      await language.selectOption("ru");
+      await page.getByRole("heading", { name: "Свойства артефакта" }).waitFor();
+      assert.equal(
+        await page
+          .locator('nav [aria-pressed="true"]')
+          .getAttribute("data-order"),
+        flaggedOrder,
+      );
+      assert.equal(
+        await page.getByRole("button", { name: "Скачать GOOD" }).isEnabled(),
+        false,
+      );
+      await page.getByLabel("Язык интерфейса").selectOption("en");
+    }
     await page
       .getByRole("button", { name: "Exclude artifact", exact: true })
       .click();
