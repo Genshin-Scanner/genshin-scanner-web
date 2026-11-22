@@ -20,6 +20,10 @@ async function scan(file: File, assetBase: URL, signal: AbortSignal) {
 
 Each item includes its timestamp in seconds, artifact draft, review issues, thumbnail (`image`), and detail crop (`detail`). The returned count covers detected selections skipped because of rarity. To cancel, abort the controller that owns the signal. A caller that supplies its own game profile can pass it as the sixth argument.
 
+## Recording input
+
+The exported `recordingAccept` string can be passed to a file picker. `scanVideo` checks the actual video dimensions, finite duration, and forward and backward seeks. The native path uses a blob URL for the original file. If a Matroska or WebM input fails the opening checks, the adapter loads Mediabunny and copies compressed video packets to a seekable local Blob. The host receives `Preparing recording` with `total: 0` for indeterminate progress. An abort signal also cancels preparation. See [formats, limitations, and verification](../../docs/recording-formats.md).
+
 ## Serve the OCR assets
 
 Pass the URL of a static directory containing `worker.min.js`, the Tesseract core JavaScript and WebAssembly variants, and `eng.traineddata.gz`. In this monorepo, `bun run ocr:assets` prepares that directory in `apps/web/public/ocr/`. An embedding application can serve its contents, including the notices, under its own base URL. The browser loads these files on demand. It reads the recording locally.

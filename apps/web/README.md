@@ -1,6 +1,8 @@
 # @scanner/web
 
-The React application turns a local MP4/H.264 recording of the English PC artifact inventory into a downloadable GOOD v3 file. Select a recording, inspect the thumbnail and recorded detail crop for each flagged artifact, then correct its fields or exclude it before exporting.
+The React application turns a local MP4, WebM, or MKV recording of the English PC artifact inventory into a downloadable GOOD v3 file. Select a recording, inspect the thumbnail and recorded detail crop for each flagged artifact, then correct its fields or exclude it before exporting.
+
+The file picker and drag-and-drop use the same playback checks. If a WebM or MKV needs repackaging, the app shows a preparation stage that can be cancelled. A device needs a working decoder for the selected video track. See the [codec matrix](../../docs/recording-formats.md).
 
 ## Run and build
 

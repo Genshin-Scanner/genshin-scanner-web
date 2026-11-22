@@ -2,7 +2,7 @@
 
 ## First release
 
-A player selects a local recording, reviews the extracted cards, corrects uncertain fields, and downloads a GOOD v3 file. The first release targets 4★ and 5★ artifacts in the English PC inventory, recorded as MP4/H.264. The acceptance targets include 16:9 and 16:10 footage and desktop Chrome, Edge, Firefox, and Safari. Vite builds the static site for GitHub Pages. Processing takes place on the player's device. See the [project status](PROJECT-STATE.md) for verified configurations.
+A player selects a local recording, reviews the extracted cards, corrects uncertain fields, and downloads a GOOD v3 file. The first release targets 4★ and 5★ artifacts in the English PC inventory, recorded as MP4/H.264. The acceptance targets include 16:9 and 16:10 footage and desktop Chrome, Edge, Firefox, and Safari. Vite builds the static site for GitHub Pages. Processing takes place on the player's device. See the [project status](PROJECT-STATE.md) for verified configurations and the [recording format update](recording-formats.md) for input formats added after the first release.
 
 ## Monorepo
 
