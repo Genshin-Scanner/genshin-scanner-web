@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   exportGood,
+  artifactIssuePaths,
   validateArtifact,
   type Artifact,
 } from "../packages/good/src";
@@ -31,7 +32,7 @@ test("guards main stat slot, rarity level, repeated and hidden stats", () => {
   );
   expect(
     validateArtifact({ ...sands, unactivatedSubstats: sands.substats }),
-  ).toContain("substats");
+  ).toContain("unactivatedSubstats");
 });
 test("rejects upgraded substats on a level zero artifact", () => {
   expect(
@@ -45,4 +46,24 @@ test("rejects upgraded substats on a level zero artifact", () => {
       ],
     }),
   ).toContain("substats");
+});
+
+test("review identifies the exact substat control or a group-wide issue", () => {
+  expect(
+    artifactIssuePaths({
+      ...sands,
+      substats: [sands.substats[0], { key: "enerRech_", value: 999 }],
+    }),
+  ).toEqual(["substats.1.value"]);
+  expect(
+    artifactIssuePaths({
+      ...sands,
+      unactivatedSubstats: [{ key: "def", value: 17 }],
+    }),
+  ).toEqual(["unactivatedSubstats.0.key"]);
+  expect(artifactIssuePaths({ ...sands, substats: [] })).toContain("substats");
+  expect(artifactIssuePaths({ ...sands, location: undefined })).toEqual([
+    "location",
+  ]);
+  expect(artifactIssuePaths(sands)).toEqual([]);
 });

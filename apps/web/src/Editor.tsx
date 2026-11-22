@@ -1,4 +1,5 @@
 import {
+  artifactIssuePaths,
   allArtifactSetKeys,
   allArtifactSlotKeys,
   allLocationCharacterKeys,
@@ -7,6 +8,7 @@ import {
   type Artifact,
 } from "@scanner/good";
 import type { Row } from "./review";
+import { NumberField } from "./components/NumberField";
 import { Choice } from "./components/Choice";
 import { SubstatFields } from "./components/SubstatFields";
 
@@ -20,6 +22,12 @@ export function Editor({
   toggle: () => void;
 }) {
   const a = row.draft;
+  const issues = artifactIssuePaths(a);
+
+  function fieldIssue(key: keyof Artifact) {
+    if (a[key] === undefined) return "Choose or enter a value.";
+    if (issues.includes(key)) return "Check this value against the recording.";
+  }
 
   function patch<K extends keyof Artifact>(
     key: K,
@@ -46,58 +54,61 @@ export function Editor({
       />
       {row.issues.length > 0 && (
         <p className="mb-3 rounded-md bg-amber-100 p-2 text-amber-950">
-          Check {row.issues.join(", ")}
+          Compare the highlighted fields with the recorded panel.
         </p>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         <Choice
           label="Set"
+          issue={fieldIssue("setKey")}
           value={a.setKey}
           options={allArtifactSetKeys}
           onChange={(v) => patch("setKey", v as Artifact["setKey"])}
         />
         <Choice
           label="Slot"
+          issue={fieldIssue("slotKey")}
           value={a.slotKey}
           options={allArtifactSlotKeys}
           onChange={(v) => patch("slotKey", v as Artifact["slotKey"])}
         />
         <Choice
           label="Main stat"
+          issue={fieldIssue("mainStatKey")}
           value={a.mainStatKey}
           options={allMainStatKeys}
           onChange={(v) => patch("mainStatKey", v as Artifact["mainStatKey"])}
         />
         <Choice
           label="Rarity"
+          issue={fieldIssue("rarity")}
           value={a.rarity?.toString()}
           options={["4", "5"]}
           onChange={(v) => patch("rarity", Number(v) as 4 | 5)}
         />
-        <label className="grid min-w-0 gap-1 text-sm text-stone-700">
-          Level
-          <input
-            className="w-full min-w-0 rounded border border-stone-400 bg-white p-1.5"
-            type="number"
-            min="0"
-            max={a.rarity === 4 ? 16 : 20}
-            value={a.level ?? ""}
-            onChange={(e) =>
-              patch(
-                "level",
-                e.target.value === "" ? undefined : e.target.valueAsNumber,
-              )
-            }
-          />
-        </label>
+        <NumberField
+          label="Level"
+          issue={fieldIssue("level")}
+          min="0"
+          max={a.rarity === 4 ? 16 : 20}
+          value={a.level ?? ""}
+          onChange={(e) =>
+            patch(
+              "level",
+              e.target.value === "" ? undefined : e.target.valueAsNumber,
+            )
+          }
+        />
         <Choice
           label="Equipped by"
+          issue={fieldIssue("location")}
           value={a.location}
           options={["", ...allLocationCharacterKeys]}
           onChange={(v) => patch("location", v as Artifact["location"])}
         />
         <Choice
           label="Lock"
+          issue={fieldIssue("lock")}
           value={
             a.lock === undefined ? undefined : a.lock ? "Locked" : "Unlocked"
           }
@@ -109,6 +120,7 @@ export function Editor({
         <SubstatFields
           key={group}
           group={group}
+          issues={issues}
           stats={a[group] ?? []}
           onChange={(stats) => patch(group, stats)}
         />

@@ -21,9 +21,10 @@ export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
         )
         .map(({ r, i }) => (
           <button
-            className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-stone-100 aria-pressed:bg-emerald-100"
+            className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-stone-100 aria-pressed:ring-2 aria-pressed:ring-inset aria-pressed:ring-emerald-800 data-[review=true]:bg-amber-100 data-[review=true]:hover:bg-amber-200"
             key={i}
             data-order={i}
+            data-review={!r.excluded && r.issues.length > 0}
             aria-pressed={i === selected}
             onClick={() => select(i)}
           >

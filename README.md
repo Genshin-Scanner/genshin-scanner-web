@@ -63,7 +63,7 @@ For another browser, use e.g. `bun run check:browser firefox`. The optional argu
 - [ ] Improve recognition accuracy by turning cases from the existing manual annotations into targeted regression tests.
 - [ ] Let players enter their custom Wanderer and Traveler names so equipped artifacts map to the correct GOOD character keys.
 - [x] Migrate the web interface to Tailwind CSS.
-- [ ] Highlight missing fields in the review form so players can find what blocks export.
+- [x] Highlight missing fields in the review form so players can find what blocks export.
 - [ ] Localize the application interface with i18n.
 - [ ] Support video formats and codecs beyond MP4 and H.264.
 - [ ] Verify the full workflow in Safari on macOS and with footage recorded in a native 16:9 game layout.

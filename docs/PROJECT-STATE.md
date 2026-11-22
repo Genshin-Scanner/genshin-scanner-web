@@ -1,6 +1,6 @@
 # Genshin Scanner project status
 
-The scanner processes a local inventory recording and exports GOOD v3. It finds English 4★ and 5★ artifact cards, shows thumbnails and timestamps, flags uncertain fields, and lets the player exclude items before export. The static site includes its OCR assets.
+The scanner processes a local inventory recording and exports GOOD v3. It finds English 4★ and 5★ artifact cards, shows thumbnails and timestamps, flags uncertain fields, and lets the player exclude items before export. The review list highlights flagged artifacts. The editor identifies missing fields, invalid stat keys and values, and group-wide roll constraints. The static site includes its OCR assets.
 
 ## Running the site
 
