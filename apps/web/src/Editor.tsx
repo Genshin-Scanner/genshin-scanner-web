@@ -3,43 +3,13 @@ import {
   allArtifactSlotKeys,
   allLocationCharacterKeys,
   allMainStatKeys,
-  allSubstatKeys,
   type ArtifactDraft,
   type Artifact,
 } from "@scanner/good";
 import type { Row } from "./review";
-function Choice({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value?: string;
-  options: readonly string[];
-  onChange: (v: string) => void;
-}) {
-  return (
-    <label className="grid min-w-0 gap-1 text-sm text-stone-700">
-      {label}
-      <select
-        className="w-full min-w-0 rounded border border-stone-400 bg-white p-1.5"
-        aria-label={label}
-        value={value ?? "?"}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        <option value="?" disabled>
-          Choose…
-        </option>
-        {options.map((k) => (
-          <option key={k} value={k}>
-            {k || "Unequipped"}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
+import { Choice } from "./components/Choice";
+import { SubstatFields } from "./components/SubstatFields";
+
 export function Editor({
   row,
   update,
@@ -50,12 +20,14 @@ export function Editor({
   toggle: () => void;
 }) {
   const a = row.draft;
+
   function patch<K extends keyof Artifact>(
     key: K,
     value: Artifact[K] | undefined,
   ) {
     update({ ...a, [key]: value });
   }
+
   return (
     <article className="rounded-xl border border-stone-300 bg-white p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -133,76 +105,14 @@ export function Editor({
           onChange={(v) => patch("lock", v === "Locked")}
         />
       </div>
-      {(["substats", "unactivatedSubstats"] as const).map((key) => {
-        const stats = a[key] ?? [];
-        return (
-          <section key={key}>
-            <h3 className="mt-5 font-semibold">
-              {key === "substats" ? "Substats" : "Unactivated substats"}
-            </h3>
-            {stats.map((s, i) => (
-              <div
-                data-stat-row
-                className="my-2 grid grid-cols-[minmax(0,1fr)_minmax(4rem,0.55fr)_auto] items-end gap-2"
-                key={i}
-              >
-                <Choice
-                  label={"Stat " + (i + 1)}
-                  value={s.key || undefined}
-                  options={allSubstatKeys}
-                  onChange={(v) =>
-                    patch(
-                      key,
-                      stats.map((old, j) =>
-                        j === i ? { ...old, key: v as typeof s.key } : old,
-                      ),
-                    )
-                  }
-                />
-                <label className="grid min-w-0 gap-1 text-sm text-stone-700">
-                  Value
-                  <input
-                    className="w-full min-w-0 rounded border border-stone-400 bg-white p-1.5"
-                    type="number"
-                    step="any"
-                    value={s.value || ""}
-                    onChange={(e) =>
-                      patch(
-                        key,
-                        stats.map((old, j) =>
-                          j === i
-                            ? { ...old, value: e.target.valueAsNumber || 0 }
-                            : old,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <button
-                  className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
-                  aria-label={"Remove " + key + " " + (i + 1)}
-                  onClick={() =>
-                    patch(
-                      key,
-                      stats.filter((_, j) => j !== i),
-                    )
-                  }
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-            {stats.length < 4 && (
-              <button
-                className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
-                onClick={() => patch(key, [...stats, { key: "", value: 0 }])}
-              >
-                Add stat
-              </button>
-            )}
-          </section>
-        );
-      })}
+      {(["substats", "unactivatedSubstats"] as const).map((group) => (
+        <SubstatFields
+          key={group}
+          group={group}
+          stats={a[group] ?? []}
+          onChange={(stats) => patch(group, stats)}
+        />
+      ))}
     </article>
   );
 }

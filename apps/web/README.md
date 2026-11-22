@@ -15,7 +15,7 @@ Open the URL printed by Vite. To deploy, run `bun run build` and serve the conte
 
 ## Where to make changes
 
-- [main.tsx](src/main.tsx) handles file selection, cancellation, scan progress, and the review list. It receives recognized items from the [browser adapter](../../packages/browser/README.md).
+- [App.tsx](src/App.tsx) composes the recording picker, review summary, artifact list, and editor. [useRecordingScan.ts](src/useRecordingScan.ts) manages scan progress, cancellation, and incoming items from the [browser adapter](../../packages/browser/README.md).
 - [Editor.tsx](src/Editor.tsx) renders the fields for the selected artifact.
 - [review.ts](src/review.ts) revalidates edits and hands the included artifacts to the [GOOD exporter](../../packages/good/README.md). Included cards with unresolved issues block the download.
 
