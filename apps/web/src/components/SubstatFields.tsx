@@ -1,3 +1,4 @@
+import { gameLabels } from "../gameLabels";
 import { useTranslation } from "react-i18next";
 import { allSubstatKeys, type Artifact } from "@scanner/good";
 import { NumberField } from "./NumberField";
@@ -16,7 +17,8 @@ export function SubstatFields({
   onChange,
   issues,
 }: SubstatFieldsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const labels = gameLabels(i18n.resolvedLanguage);
 
   function changeStat(
     index: number,
@@ -29,9 +31,7 @@ export function SubstatFields({
 
   return (
     <section>
-      <h3 className="mt-5 font-semibold">
-        {group === "substats" ? t("substats") : t("unactivatedSubstats")}
-      </h3>
+      <h3 className="mt-5 font-semibold">{t(group)}</h3>
       {issues.includes(group) && (
         <p className="my-2 rounded border-l-4 border-amber-600 bg-amber-50 p-2 text-sm text-amber-950">
           {t("invalidGroup")}
@@ -52,7 +52,8 @@ export function SubstatFields({
             }
             value={s.key || undefined}
             options={allSubstatKeys}
-            onChange={(v) => changeStat(i, { key: v as typeof s.key })}
+            optionLabel={(key) => labels.stats[key]}
+            onChange={(v) => changeStat(i, { key: v })}
           />
           <NumberField
             label={t("value")}

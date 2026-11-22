@@ -1,3 +1,4 @@
+import { gameLabels } from "../gameLabels";
 import { useTranslation } from "react-i18next";
 import type { Row } from "../review";
 
@@ -9,6 +10,7 @@ interface ArtifactListProps {
 
 export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
   const { t, i18n } = useTranslation();
+  const labels = gameLabels(i18n.resolvedLanguage);
 
   return (
     <nav
@@ -37,8 +39,7 @@ export function ArtifactList({ rows, selected, select }: ArtifactListProps) {
               alt=""
             />
             <span className="text-sm font-semibold">
-              {r.draft.setKey?.replace(/([a-z])([A-Z])/g, "$1 $2") ||
-                t("unidentified")}
+              {r.draft.setKey ? labels.sets[r.draft.setKey] : t("unidentified")}
               <small className="block text-xs font-normal text-stone-600">
                 {t("timestamp", {
                   time: r.time.toLocaleString(i18n.resolvedLanguage, {

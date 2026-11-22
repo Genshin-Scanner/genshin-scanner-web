@@ -117,7 +117,21 @@ try {
         await page.getByRole("button", { name: "Скачать GOOD" }).isEnabled(),
         false,
       );
+      const mainStat = page.getByLabel("Основная характеристика", {
+        exact: true,
+      });
+      const selectedStat = await mainStat.inputValue();
+      assert.equal(
+        await mainStat
+          .getByRole("option", { name: "Сила атаки, %", exact: true })
+          .getAttribute("value"),
+        "atk_",
+      );
       await page.getByLabel("Язык интерфейса").selectOption("en");
+      assert.equal(
+        await page.getByLabel("Main stat", { exact: true }).inputValue(),
+        selectedStat,
+      );
     }
     await page
       .getByRole("button", { name: "Exclude artifact", exact: true })

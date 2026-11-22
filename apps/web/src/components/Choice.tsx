@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useId } from "react";
 import { FieldHint } from "./FieldHint";
 
-export function Choice({
+export function Choice<Key extends string>({
   label,
   value,
   options,
@@ -13,9 +13,9 @@ export function Choice({
   label: string;
   issue?: string;
   value?: string;
-  options: readonly string[];
-  optionLabel?: (key: string) => string;
-  onChange: (v: string) => void;
+  options: readonly Key[];
+  optionLabel?: (key: Key) => string;
+  onChange: (value: Key) => void;
 }) {
   const { t } = useTranslation();
 
@@ -30,7 +30,7 @@ export function Choice({
         aria-invalid={!!issue}
         aria-describedby={issue ? hintId : undefined}
         value={value ?? "?"}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value as Key)}
       >
         <option value="?" disabled>
           {t("choose")}

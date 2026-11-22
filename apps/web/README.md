@@ -20,3 +20,9 @@ Open the URL printed by Vite. To deploy, run `bun run build` and serve the conte
 - [review.ts](src/review.ts) revalidates edits and hands the included artifacts to the [GOOD exporter](../../packages/good/README.md). Included cards with unresolved issues block the download.
 
 To exercise the built UI against the private reference recording, use the [root scripts](../../README.md#root-scripts).
+
+## Game names and languages
+
+The UI remembers the selected language (English or Russian). Changing it during review preserves the selected artifact, edits, and GOOD keys. The recording must show the English PC inventory.
+
+The display catalogs in [src/locales](src/locales) use artifact set, stat, and character names from Optimizer’s pinned game data. Percentage-based stats carry an explicit percent sign to distinguish them from flat stats. When updating the GOOD keys, refresh both catalogs and run the label coverage tests. [Pinned English and Russian sources](https://github.com/frzyc/genshin-optimizer/tree/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/dm-localization/assets/locales) · [Upstream license](../../packages/good/src/upstream/LICENSE)

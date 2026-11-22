@@ -1,3 +1,4 @@
+import { gameLabels } from "./gameLabels";
 import { useTranslation } from "react-i18next";
 import {
   artifactIssuePaths,
@@ -22,7 +23,8 @@ export function Editor({
   update: (d: ArtifactDraft) => void;
   toggle: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const labels = gameLabels(i18n.resolvedLanguage);
 
   const a = row.draft;
   const issues = artifactIssuePaths(a);
@@ -66,27 +68,31 @@ export function Editor({
           issue={fieldIssue("setKey")}
           value={a.setKey}
           options={allArtifactSetKeys}
-          onChange={(v) => patch("setKey", v as Artifact["setKey"])}
+          optionLabel={(key) => labels.sets[key]}
+          onChange={(v) => patch("setKey", v)}
         />
         <Choice
           label={t("slotKey")}
           issue={fieldIssue("slotKey")}
           value={a.slotKey}
           options={allArtifactSlotKeys}
-          onChange={(v) => patch("slotKey", v as Artifact["slotKey"])}
+          optionLabel={(key) => labels.slots[key]}
+          onChange={(v) => patch("slotKey", v)}
         />
         <Choice
           label={t("mainStatKey")}
           issue={fieldIssue("mainStatKey")}
           value={a.mainStatKey}
           options={allMainStatKeys}
-          onChange={(v) => patch("mainStatKey", v as Artifact["mainStatKey"])}
+          optionLabel={(key) => labels.stats[key]}
+          onChange={(v) => patch("mainStatKey", v)}
         />
         <Choice
           label={t("rarity")}
           issue={fieldIssue("rarity")}
           value={a.rarity?.toString()}
           options={["4", "5"]}
+          optionLabel={(stars) => stars + "★"}
           onChange={(v) => patch("rarity", Number(v) as 4 | 5)}
         />
         <NumberField
@@ -106,8 +112,11 @@ export function Editor({
           label={t("location")}
           issue={fieldIssue("location")}
           value={a.location}
-          options={["", ...allLocationCharacterKeys]}
-          onChange={(v) => patch("location", v as Artifact["location"])}
+          options={["", ...allLocationCharacterKeys] as const}
+          optionLabel={(key) =>
+            key ? labels.characters[key] : t("unequipped")
+          }
+          onChange={(v) => patch("location", v)}
         />
         <Choice
           label={t("lock")}
