@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { SegmentDetector, type Mark } from "../packages/core/src";
+import { SegmentDetector, markFrame, type Mark } from "../packages/core/src";
 const mark = (v: number, column?: number): Mark => ({
   quality: 3,
   column,
@@ -33,4 +33,33 @@ test("OCR uses a settled frame for both attempts after a selection", () => {
   const segment = d.flush()!;
   expect(segment.time).toBeGreaterThanOrEqual(0.2);
   expect(segment.alternate).toBeGreaterThanOrEqual(0.2);
+});
+
+test("a one-pixel compression change on one paper scanline preserves the card fingerprint", () => {
+  const width = 400,
+    height = 240;
+  const frame = { width, height, data: new Uint8Array(width * height * 4) };
+  for (let i = 0; i < frame.data.length; i += 4)
+    frame.data[i] = ((i / 4) % 7) * 40;
+  const paper = (x: number, y: number) =>
+    frame.data.set([234, 227, 216, 255], (y * width + x) * 4);
+  for (let y = 121; y <= 128; y++) for (let x = 210; x < 390; x++) paper(x, y);
+  const card = { x: 210, y: 40, width: 180, height: 170 };
+  const layout = {
+    locate: () => ({
+      card,
+      rarity: 5,
+      level: { ...card, y: 128 },
+      lock: false,
+      thumbnail: card,
+      header: card,
+      mainValue: card,
+      stats: card,
+      set: card,
+    }),
+  };
+  const original = markFrame(frame, layout);
+  expect(original).toBeDefined();
+  frame.data[(122 * width + 389) * 4] = 0;
+  expect(markFrame(frame, layout)?.values).toEqual(original!.values);
 });

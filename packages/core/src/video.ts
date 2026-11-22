@@ -1,5 +1,11 @@
 import { pcLayout, type LayoutProfile } from "./layout";
-import { bands, matches, type Pixels, type Rect } from "./pixels";
+import {
+  bands,
+  matches,
+  type Pixels,
+  type Rect,
+  type ColorTest,
+} from "./pixels";
 export interface Mark {
   rarity?: number;
   values: Uint8Array;
@@ -91,19 +97,21 @@ export function markFrame(
   // Re-anchor at the blank strip above the level badge. A one-pixel wobble in a tinted
   // title or in the green letters would otherwise move every sample on compressed video.
   const bodyY = Math.round(c.level.y - c.card.width * 0.042);
+  // A codec can shift one scanline at the paper edge by a pixel. Use a majority
+  // across three rows of the blank strip so every text sample keeps its anchor.
+  const paper: ColorTest = (r, g, b) =>
+    Math.abs(r - 234) < 15 && Math.abs(g - 227) < 15 && Math.abs(b - 216) < 15;
+  const rows = [0.008, 0.02, 0.032].map(
+    (offset) => bodyY + Math.max(1, Math.round(c.card.width * offset)),
+  );
   const strip = bands(
     Math.floor(p.width * 0.5),
     p.width,
-    (x) =>
-      matches(
-        p,
-        x,
-        bodyY + 2,
-        (r, g, b) =>
-          Math.abs(r - 234) < 15 &&
-          Math.abs(g - 227) < 15 &&
-          Math.abs(b - 216) < 15,
-      ),
+    (x) => {
+      const first = matches(p, x, rows[0], paper);
+      const second = matches(p, x, rows[1], paper);
+      return first === second ? first : matches(p, x, rows[2], paper);
+    },
     Math.floor(p.width * 0.15),
   ).at(-1);
   if (!strip) return;

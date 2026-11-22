@@ -10,6 +10,6 @@ An unrecognized layout returns `undefined`. A recognized card returns a partial 
 
 ## Find selections in a recording
 
-For each sampled frame in chronological order, pass `markFrame(frame)` and its timestamp in seconds to `detector.push(time, mark)` on a `SegmentDetector` instance. Collect each emitted segment, including the one returned by `detector.flush()` at the end. A segment provides a representative timestamp and an alternate timestamp for a second reading.
+For each sampled frame in chronological order, pass `markFrame(frame)` and its timestamp in seconds to `detector.push(time, mark)` on a `SegmentDetector` instance. Collect each emitted segment, including the one returned by `detector.flush()` at the end. A segment provides a representative timestamp and an alternate timestamp for a second reading. The PC detector locates the paper edge across three scanlines so a small compression artifact on one line does not shift the sampled text. Video container handling belongs to the [browser adapter](../browser/README.md#recording-input).
 
 The defaults target the English PC inventory. Supply a `LocaleProfile` to change text parsing and a `LayoutProfile` to locate fields in a different layout. A new inventory layout may also need its own frame marker for video selection detection.
