@@ -39,7 +39,7 @@ The public tests use small generated color patterns. They check H.264 packet int
 To reproduce a codec check, build the site with `bun run build` and pass a variant of the 33-item reference recording to the browser check. Keep all recording variants under the ignored `test-assets/` directory. For example, these commands produce an HEVC MP4 and an MKV with the same video stream.
 
 ```sh
-ffmpeg -i test-assets/count-33.mp4 -map 0:v:0 -vf fps=15 -pix_fmt yuv420p -g 30 -c:v libx265 -crf 18 -tag:v hvc1 test-assets/reference-hevc.mp4
+ffmpeg -i test-assets/33-1/video.mp4 -map 0:v:0 -vf fps=15 -pix_fmt yuv420p -g 30 -c:v libx265 -crf 18 -tag:v hvc1 test-assets/reference-hevc.mp4
 ffmpeg -i test-assets/reference-hevc.mp4 -map 0:v:0 -c copy test-assets/reference-hevc.mkv
 bun run check:browser msedge test-assets/reference-hevc.mkv
 ```

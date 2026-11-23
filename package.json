@@ -20,7 +20,8 @@
     "ocr:assets": "bun scripts/ocr-assets.ts",
     "check:video": "bun scripts/check-video.ts",
     "dev": "bun run ocr:assets && vite apps/web",
-    "check:browser": "node scripts/browser-check.ts"
+    "check:browser": "node scripts/browser-check.ts",
+    "check:corpus": "node scripts/check-corpus.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.3.0",

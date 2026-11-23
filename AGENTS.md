@@ -18,7 +18,7 @@ Communicate with the user in Russian. Read the [project status](docs/PROJECT-STA
 - Inspect the staged changes with `git diff --cached --check` and the file list with `git diff --cached --name-only`. Fix issues before committing. Report an empty test suite or any check that requires a separate environment.
 - Make small, verifiable commits and sign them with the SSH key configured for this repository (`id_ed25519_codex`). The commit author remains responsible for the results.
 
-- Never launch Astra subagents. Ask for explicit permission before launching or resuming a Sol or Terra subagent. Prefer defining a repository-local skill for a delegated task before assigning it.
+- Never launch Astra subagents. Ask for explicit permission before launching or resuming a Sol or Terra subagent. Prefer defining a repository-local skill for a delegated task before assigning it. For annotated recordings use the [recognition check workflow](skills/check-recognition/SKILL.md).
 
 ## Documentation
 

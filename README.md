@@ -5,7 +5,7 @@ Turn a Genshin Impact inventory recording into a [GOOD](https://github.com/frzyc
 ## Scan an inventory
 
 1. Open the artifact inventory in the English PC version of the game. Record your screen while selecting each 4★ or 5★ artifact you want to export. Leave its detail panel visible long enough for the text to settle.
-2. Open the scanner and choose the recording. It detects item changes, reads each panel, and shows a thumbnail and timestamp for each artifact.
+2. Open the scanner. If you renamed the Traveler, Wanderer, or Manekin, enter their in-game names under **Custom character names** before choosing the recording. It detects item changes, reads each panel, and shows a thumbnail and timestamp for each artifact.
 3. Review flagged cards against the recorded panel. Correct the fields or exclude the item, then choose **Export GOOD**.
 4. In Genshin Optimizer, open **Settings → Current Database → Upload**, select the JSON file, and review the import summary before updating the database.
 
@@ -55,15 +55,16 @@ Run these commands from the repository root after installing dependencies.
 | `bun run format:check`  | Report files that would change under Prettier.                                                                                                                                                                                            |
 | `bun run check`         | Run the public tests, formatting check, type checks, and production build in sequence.                                                                                                                                                    |
 | `bun run check:frames`  | Run English OCR on the three private reference PNGs in `test-assets/` and check recognized fields and review flags.                                                                                                                       |
-| `bun run check:video`   | Use FFmpeg to compare the detector's count and order with the 33 reference PNGs for `test-assets/count-33.mp4`.                                                                                                                           |
+| `bun run check:video`   | Use FFmpeg to compare the detector's count and order with the 33 reference PNGs for `test-assets/33-1/video.mp4`.                                                                                                                         |
 | `bun run check:browser` | Test cancellation, review, exclusion, and GOOD download against the private recording and annotations. Run `bun run build` first. Requires Node with TypeScript support and an installed Playwright-compatible browser. Defaults to Edge. |
+| `bun run check:corpus`  | Compare raw scan results with manual GOOD annotations in Edge. Accepts a recording and an optional reference file. See [recognition checks](docs/recognition.md).                                                                         |
 
 For another browser, use e.g. `bun run check:browser firefox`. The optional arguments are the browser (`msedge`, `chrome`, `chromium`, `firefox`, or `webkit`), the recording path, and the number of repetitions of the reference clip in that recording. Append `--expect-remux` to require the local repackaging step for an unindexed fixture. See the [verification results](docs/PROJECT-STATE.md#verification) and [v1 architecture](docs/v1-ARCHITECTURE.md).
 
 ## TBD
 
-- [ ] Improve recognition accuracy by turning cases from the existing manual annotations into targeted regression tests.
-- [ ] Let players enter their custom Wanderer and Traveler names so equipped artifacts map to the correct GOOD character keys.
+- [x] Add numeric regression fixtures and compare raw scan results against annotated recordings.
+- [x] Recognize custom names for the Traveler, Wanderer, and Manekin. Flag equipped Manekin artifacts until GOOD provides an owner key.
 - [x] Migrate the web interface to Tailwind CSS.
 - [x] Highlight missing fields in the review form so players can find what blocks export.
 - [x] Localize the application interface with i18n.

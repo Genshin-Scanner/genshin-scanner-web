@@ -4,22 +4,39 @@ The scanner processes a local inventory recording and exports GOOD v3. It finds 
 
 The scanner accepts MP4, WebM, and Matroska recordings. [Recording formats](recording-formats.md) covers codec pairs, local repackaging, browser results, and the procedure for testing a new combination.
 
+Custom character names are optional, saved on the device, and applied to the next scan. Traveler and Wanderer export under their GOOD keys. Manekin equipment requires an explicit review decision. After scanning, the browser console command `downloadScanReport()` saves the original readings and timestamps for diagnosis.
+
 ## Running the site
 
 From the repository root, run `bun install --frozen-lockfile`, then `bun run dev`. Vite prints the local URL. Run `bun run build` to generate the static site in `apps/web/dist/`. A GitHub Pages deployment is pending.
 
 ## Verification
 
-| Command                        | What it checks                                                                                                                                                                                                                                                                                                        |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bun run check`                | Public regression tests, Prettier, TypeScript, and production builds of the three libraries and the site.                                                                                                                                                                                                             |
-| `bun run check:frames`         | Local OCR on three private reference PNGs.                                                                                                                                                                                                                                                                            |
-| `bun run check:video`          | Uses FFmpeg to decode the recording and compares the detector’s item sequence with 33 reference PNGs.                                                                                                                                                                                                                 |
-| `bun run check:browser msedge` | Exercises cancellation, correction, exclusion, and download through the production UI. Also accepts `chromium`, `firefox`, or `webkit`. Requires Node with TypeScript support, the selected browser, a production build, the private recording, and the manual reference data in `test-assets/expected-private.json`. |
+| Command                                        | What it checks                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `bun run check`                                | Public regression tests, Prettier, TypeScript, and production builds of the three libraries and the site.                                                                                                                                                                                                          |
+| `bun run check:frames`                         | Local OCR on three private reference PNGs.                                                                                                                                                                                                                                                                         |
+| `bun run check:video`                          | Uses FFmpeg to decode the recording and compares the detector’s item sequence with 33 reference PNGs.                                                                                                                                                                                                              |
+| `bun run check:browser msedge`                 | Exercises cancellation, correction, exclusion, and download through the production UI. Also accepts `chromium`, `firefox`, or `webkit`. Requires Node with TypeScript support, the selected browser, a production build, the private recording, and the manual reference data in `test-assets/33-1/expected.json`. |
+| `bun run check:corpus [recording] [reference]` | Runs Edge and compares the raw scan with every annotated field in selection order. [Private corpus workflow](recognition.md)                                                                                                                                                                                       |
+
+### Raw recognition results
+
+Edge 158.0.4370.33 produced the following results before any UI corrections, with the recorded Traveler name supplied. Each exact match includes equipped owner, lock state, active and unactivated substats. The per-recording references account for two differences verified on the source frames. [Reference details](recognition.md#november-2026-private-references)
+
+| Recording                                               | Selections found | Exact matches | Flagged before → after |
+| ------------------------------------------------------- | ---------------: | ------------: | ---------------------: |
+| 33-item reference                                       |               33 |            33 |                  7 → 0 |
+| 120-item ShadowPlay, 1920×1200                          |              120 |           120 |                 20 → 0 |
+| 120-item OBS, 1280×720, including its opening selection |              121 |           121 |                 99 → 0 |
+
+The previous OBS scanner returned 119 cards. The updated detector distinguishes consecutive plumes by changes across multiple substat lines. The public tests include cropped numeric regressions for 11.1%, 11.7%, and Elemental Mastery +21.
+
+### Earlier browser and format checks
 
 On the Windows format matrix, Edge exported all 33 reference artifacts for all seven added container/codec pairs. Firefox completed the five pairs using H.264, AV1, VP8, or VP9. Its HEVC decoder rejected both containers on this machine. Separate Edge checks exercise local repackaging of unindexed files. [Fixture settings and results](recording-formats.md#browser-results-on-windows)
 
-The original 1920×1200 recording lasts 56.4 seconds. Edge, Chromium, and Firefox each detected all 33 artifacts and flagged seven for review. After correction, every checked field in each export matched the independent manual annotations. A synthetic artifact produced by the exporter was also imported through the database UI in Genshin Optimizer 10.40.0.
+Before the recognition update, the original 1920×1200 recording lasts 56.4 seconds. Edge, Chromium, and Firefox each detected all 33 artifacts and flagged seven for review. After correction, every checked field in each export matched the independent manual annotations. A synthetic artifact produced by the exporter was also imported through the database UI in Genshin Optimizer 10.40.0.
 
 Edge passed a second test using a padded 1920×1080 copy. It flagged 14 of 33 items. Verifying the game's native 16:9 layout still requires footage recorded at that aspect ratio. The Windows Playwright WebKit build could not decode either test H.264 file. Safari support still needs verification on macOS.
 

@@ -11,7 +11,7 @@ const video = Bun.spawn(
     "-loglevel",
     "error",
     "-i",
-    "test-assets/count-33.mp4",
+    "test-assets/33-1/video.mp4",
     "-vf",
     `fps=${fps},scale=${width}:${height}`,
     "-pix_fmt",
@@ -31,7 +31,7 @@ function fingerprint(p: Uint8Array) {
     }
   return Uint8Array.from(values);
 }
-const dir = "test-assets/all-screens-for-count-33";
+const dir = "test-assets/33-1/screenshots";
 const refs = readdirSync(dir)
   .filter((f) => f.endsWith(".png"))
   .sort()
