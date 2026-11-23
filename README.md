@@ -81,6 +81,7 @@ For another browser, use e.g. `bun run check:browser firefox`. The optional argu
 - [ ] Integrate into GO
 
 ## Contributing
+
 Found a bug or have a feature idea? [Open an issue](https://github.com/Genshin-Scanner/genshin-scanner-web/issues).
 
 To contribute code, fork this repository, create a branch in your fork, and open a [pull request](https://github.com/Genshin-Scanner/genshin-scanner-web/pulls) against `main`.

@@ -16,6 +16,8 @@ From the repository root, run `bun install --frozen-lockfile`, then `bun run dev
 
 The [Checks workflow](../.github/workflows/check.yml) runs `bun run check` on Ubuntu for pull requests targeting `main`, including PRs from forks. The `check` job can serve as a required status check in the branch ruleset.
 
+The [Pages workflow](../.github/workflows/pages.yml) also calls Checks on pushes to `main` and on manual deployments from `main`. That call uploads the checked production build from `apps/web/dist/`. The deployment job publishes that artifact after Checks succeeds.
+
 <!-- prettier-ignore -->
 | Command | What it checks |
 |---------|----------------|
