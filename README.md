@@ -74,6 +74,16 @@ For another browser, use e.g. `bun run check:browser firefox`. The optional argu
 - [ ] Verify the full workflow in Safari on macOS and with footage recorded in a native 16:9 game layout.
 - [ ] Add a layout profile for recordings from the mobile game.
 - [ ] Automate GOOD package schema update (load JSON schemas from GO upstream)
+- [ ] Add other scanning languages support
+- [ ] Add weapons scanning support
+- [ ] Add basic config form for recognized characters (talents, canstellations, maybe witch's lessons and so on)
+- [ ] Public independant NPM packages
+- [ ] Integrate into GO
+
+## Contributing
+Found a bug or have a feature idea? [Open an issue](https://github.com/Genshin-Scanner/genshin-scanner-web/issues).
+
+To contribute code, fork this repository, create a branch in your fork, and open a [pull request](https://github.com/Genshin-Scanner/genshin-scanner-web/pulls) against `main`.
 
 ## License
 
