@@ -177,12 +177,38 @@ export function markFrame(
     ...selectedColumn(p, c.card),
   };
 }
+// The first two samples cover the icon and main stat. Changes spread across
+// several substat lines can identify two plumes with the same icon and main stat.
+function changedStatLines(a: Uint8Array, b: Uint8Array) {
+  const offset = 18 * 20 + 24 * 10,
+    columns = 72,
+    rows = 22;
+  if (a.length !== offset + columns * rows) return false;
+  let changedLines = 0,
+    previousRow = -3;
+  for (let row = 0; row < rows; row++) {
+    let changed = 0;
+    for (let col = 0; col < columns; col++) {
+      const i = offset + row * columns + col;
+      if (Math.abs(a[i] - b[i]) > 24) changed++;
+    }
+    if (changed >= 4) {
+      if (row - previousRow >= 3) changedLines++;
+      previousRow = row;
+    }
+  }
+  return changedLines >= 3;
+}
 export function sameMark(a: Mark, b: Mark) {
   if (a.values.length !== b.values.length) return false;
   let differences = 0;
   for (let i = 0; i < a.values.length; i++)
     if (Math.abs(a.values[i] - b.values[i]) > 30) differences++;
-  if (differences / a.values.length >= 0.025) return false;
+  if (
+    differences / a.values.length >= 0.025 ||
+    changedStatLines(a.values, b.values)
+  )
+    return false;
   if (a.column === undefined || b.column === undefined || a.column === b.column)
     return true;
   if (!a.icon || !b.icon) return false;

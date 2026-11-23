@@ -26,13 +26,13 @@ const read: Ocr = async (image, field) => {
   png.data = Buffer.from(p.data);
   await worker.setParameters({
     tessedit_pageseg_mode:
-      field === "header" || field === "stats"
+      field === "header" || field === "stats" || field === "set"
         ? PSM.SINGLE_BLOCK
         : PSM.SINGLE_LINE,
     tessedit_char_whitelist:
       field === "level"
         ? "+0123456789"
-        : field === "mainValue"
+        : field === "mainValue" || field === "mainValueMask"
           ? "0123456789,.%"
           : "",
   });

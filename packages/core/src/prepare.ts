@@ -1,8 +1,39 @@
 import type { Field } from "./index";
-import type { Pixels } from "./pixels";
+import { bands, crop, type Pixels } from "./pixels";
+
+/** Keep the original pixels: recognition still applies its normal preprocessing. */
+export function splitStatLines(image: Pixels): Pixels[] {
+  const rows = bands(0, image.height, (y) => {
+    for (let x = 0; x < image.width; x++) {
+      const i = 4 * (y * image.width + x);
+      if (
+        image.data[i] < 178 &&
+        image.data[i + 1] < 178 &&
+        image.data[i + 2] < 180
+      )
+        return true;
+    }
+    return false;
+  });
+  const lines: [number, number][] = [];
+  for (const row of rows) {
+    const previous = lines.at(-1);
+    if (previous && row[0] - previous[1] <= 4) previous[1] = row[1];
+    else lines.push([...row]);
+  }
+  return lines.map(([top, bottom]) => {
+    const y = Math.max(0, top - 5);
+    return crop(image, {
+      x: 0,
+      y,
+      width: image.width,
+      height: Math.min(image.height, bottom + 5) - y,
+    });
+  });
+}
 // The upstream scanner separates the header, paper and green set heading before OCR.
 export function prepareText(image: Pixels, field: Field): Pixels {
-  if (field === "mainValue") return image;
+  if (field === "mainValue" || field === "headerLine") return image;
   const pad = 12,
     scale = 2,
     width = image.width * scale + pad * 2,
@@ -14,6 +45,7 @@ export function prepareText(image: Pixels, field: Field): Pixels {
       const [r, g, b] = [image.data[i], image.data[i + 1], image.data[i + 2]];
       let ink: boolean;
       switch (field) {
+        case "mainValueMask":
         case "header":
           ink =
             r > 165 &&
@@ -23,6 +55,10 @@ export function prepareText(image: Pixels, field: Field): Pixels {
           break;
         case "level":
           ink = r > 223 && g > 225 && b > 224;
+          break;
+        case "ownerLine":
+          // A thinner stroke keeps the descender of a lowercase q open on small recordings.
+          ink = g < 140;
           break;
         case "set":
           ink = g > r * 1.12 && g > b * 1.12;

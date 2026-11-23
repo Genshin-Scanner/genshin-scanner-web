@@ -28,3 +28,46 @@ test("checks the displayed main value against the level", () => {
   };
   expect(english.parse(text, 5).level).toBeUndefined();
 });
+test("an obscured bonus suffix can still identify a Cryo goblet", () => {
+  const read = (label: string) =>
+    english.parse(
+      {
+        header: "Goblet of Eonothem\n" + label,
+        mainValue: "46.6%",
+        level: "+20",
+        stats: "",
+        set: "",
+      },
+      5,
+    );
+  expect(read("Cryo DMG Boe").mainStatKey).toBe("cryo_dmg_");
+  expect(read("DMG Bonus").mainStatKey).toBeUndefined();
+  expect(read("ryo DMG").mainStatKey).toBeUndefined();
+});
+test("wrapped titles and an elixir banner preserve the full panel and both set-name lines", () => {
+  const width = 800,
+    height = 500;
+  function panel(banner: number) {
+    const frame = { width, height, data: new Uint8Array(width * height * 4) };
+    function fill(x: number, y: number, w: number, h: number, rgb: number[]) {
+      for (let j = y; j < y + h; j++)
+        for (let i = x; i < x + w; i++)
+          frame.data.set([...rgb, 255], 4 * (j * width + i));
+    }
+    fill(543, 50, 157, 8, [165, 89, 31]);
+    for (let i = 0; i < 5; i++) fill(515 + 14 * i, 140, 8, 6, [250, 196, 72]);
+    fill(500, 160, 200, banner, [220, 190, 250]);
+    fill(500, 160 + banner, 200, 230, [234, 227, 216]);
+    for (const dy of [85, 98])
+      fill(515, 160 + banner + dy, 110, 6, [96, 170, 80]);
+    return pcLayout.locate(frame)!;
+  }
+  const ordinary = panel(0),
+    crafted = panel(18);
+  expect(crafted.rarity).toBe(5);
+  expect(crafted.card.width).toBe(200);
+  expect(crafted.mainLabel).toEqual(ordinary.mainLabel);
+  expect(crafted.slotLabel).toEqual(ordinary.slotLabel);
+  expect(crafted.level.y - ordinary.level.y).toBe(18);
+  expect(crafted.set.height).toBeGreaterThan(19);
+});

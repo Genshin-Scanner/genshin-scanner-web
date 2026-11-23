@@ -22,11 +22,14 @@ export async function openBrowserOcr(assetBase: URL, language = "eng") {
     );
     let tessedit_char_whitelist = "+0123456789";
     if (field !== "level") {
-      tessedit_char_whitelist = field === "mainValue" ? "0123456789,.%" : "";
+      tessedit_char_whitelist =
+        field === "mainValue" || field === "mainValueMask"
+          ? "0123456789,.%"
+          : "";
     }
     await worker.setParameters({
       tessedit_pageseg_mode:
-        field === "header" || field === "stats"
+        field === "header" || field === "stats" || field === "set"
           ? PSM.SINGLE_BLOCK
           : PSM.SINGLE_LINE,
       tessedit_char_whitelist,

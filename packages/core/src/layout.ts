@@ -8,6 +8,8 @@ import {
 export interface CardLayout {
   card: Rect;
   header: Rect;
+  slotLabel?: Rect;
+  mainLabel?: Rect;
   mainValue: Rect;
   level: Rect;
   stats: Rect;
@@ -19,6 +21,8 @@ export interface CardLayout {
 }
 export interface LayoutProfile {
   locate(frame: Pixels): CardLayout | undefined;
+  /** Reference frame width for OCR on small recordings of this layout. */
+  ocrWidth?: number;
 }
 const purple: ColorTest = (r, g, b) => b > 100 && b > r * 1.18 && r > g * 1.35;
 const gold: ColorTest = (r, g, b) => r > 115 && r > g * 1.55 && g > b * 1.55;
@@ -39,6 +43,7 @@ function count(
   return n;
 }
 export const pcLayout: LayoutProfile = {
+  ocrWidth: 1920,
   locate(p) {
     const { width: w, height: h } = p;
     // Find the uninterrupted bottom stripe of the colored title bar.
@@ -80,7 +85,7 @@ export const pcLayout: LayoutProfile = {
       }
     }
     if (!bounds) return;
-    const [x, right] = bounds,
+    let [x, right] = bounds,
       width = right - x;
     const body = bands(
       titleY + 1,
@@ -90,9 +95,38 @@ export const pcLayout: LayoutProfile = {
     )[0];
     if (!body) return;
     const [bodyY, bodyEnd] = body;
+    // Wrapped titles can break the colored stripe into two partial runs.
+    // Recover the full panel width from the blank paper above the level badge.
+    const paperEdge = bands(
+      left,
+      w,
+      (i) =>
+        matches(p, i, bodyY + Math.max(1, Math.round(width * 0.02)), paper),
+      Math.floor(w * 0.15),
+    ).find(([a, b]) => a <= x + 3 && Math.abs(b - right) <= width * 0.05);
+    if (paperEdge) {
+      [x, right] = paperEdge;
+      width = right - x;
+    }
+    // A crafted artifact has a purple "Sanctifying Elixir Definition" banner
+    // between its stars and the paper. Header fields stay above that banner.
+    const elixir = bands(
+      Math.max(titleY, bodyY - Math.ceil(width * 0.13)),
+      bodyY,
+      (y) =>
+        matches(
+          p,
+          right - width * 0.035,
+          y,
+          (r, g, b) => b > 220 && b > g + 32 && r > g + 14,
+        ),
+      Math.ceil(width * 0.045),
+    ).at(-1);
+    const headerEnd =
+      elixir && bodyY - elixir[1] < width * 0.018 ? elixir[0] : bodyY;
     const starRows = bands(
       titleY,
-      bodyY,
+      headerEnd,
       (y) =>
         count(p, y, x + width * 0.04, x + width * 0.5, stars) > width * 0.045,
     );
@@ -116,10 +150,11 @@ export const pcLayout: LayoutProfile = {
     if (!setRows.length) return;
     const setTop = setRows[0][0];
     const scale = width / 490;
-    // Group separated horizontal strokes of letters in the green heading.
+    // A long set name wraps to a second green line before the set bonuses.
     let setBottom = setRows[0][1];
     for (const row of setRows.slice(1)) {
-      if (row[0] - setBottom > 7 * scale) break;
+      if (row[0] - setBottom > 20 * scale || row[1] - setTop > 68 * scale)
+        break;
       setBottom = row[1];
     }
     const rect = (dx: number, y: number, dw: number, height: number): Rect => ({
@@ -156,7 +191,9 @@ export const pcLayout: LayoutProfile = {
       rarity,
       lock: red > width * 0.025,
       header: rect(0.045, titleY + 3, 0.53, starRow[0] - titleY - 5),
-      mainValue: rect(0.045, bodyY - 0.22 * width, 0.48, 0.12 * width),
+      slotLabel: rect(0.045, headerEnd - 0.45 * width, 0.5, 0.09 * width),
+      mainLabel: rect(0.045, headerEnd - 0.28 * width, 0.57, 0.073 * width),
+      mainValue: rect(0.045, headerEnd - 0.22 * width, 0.48, 0.12 * width),
       level,
       stats: rect(
         0.058,
@@ -172,7 +209,7 @@ export const pcLayout: LayoutProfile = {
       ),
       thumbnail: rect(0.55, titleY + 4, 0.44, bodyY - titleY - 8),
       equipped: equipped
-        ? rect(0.11, equipped[0], 0.88, equipped[1] - equipped[0])
+        ? rect(0.15, equipped[0], 0.84, equipped[1] - equipped[0])
         : undefined,
     };
   },

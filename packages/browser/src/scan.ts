@@ -22,6 +22,7 @@ export interface ScanProfile {
   mark: (frame: Pixels) => Mark | undefined;
 }
 export interface ScanItem {
+  unsupportedOwner?: "Manekin";
   time: number;
   draft: ArtifactDraft;
   issues: string[];
@@ -41,11 +42,11 @@ function canvas(width: number, height: number) {
   if (!ctx) throw new ScanError("canvas", "Canvas 2D unavailable");
   return ctx;
 }
-function preview(video: HTMLVideoElement, r: Rect, maxWidth: number) {
+function preview(frame: HTMLCanvasElement, r: Rect, maxWidth: number) {
   const width = Math.min(r.width, maxWidth),
     ctx = canvas(width, (r.height * width) / r.width);
   ctx.drawImage(
-    video,
+    frame,
     r.x,
     r.y,
     r.width,
@@ -76,6 +77,7 @@ export async function scanVideo(
     const detected: Segment[] = [];
     const d = new SegmentDetector();
     const steps = Math.ceil(video.duration * 10);
+    // A seek changes the shared video element. Draw its frame before requesting the next one.
     for (let i = 0; i < steps; i++) {
       await seek(i / 10);
       small.drawImage(video, 0, 0, small.canvas.width, small.canvas.height);
@@ -104,22 +106,27 @@ export async function scanVideo(
     );
     ocr = await abortable(starting, signal);
     signal.throwIfAborted();
-    const full = canvas(video.videoWidth, video.videoHeight);
+    // Interpolate small glyphs while their antialiased edges are still present.
+    // Enlarging the binary OCR mask afterwards cannot recover those edges.
+    const targetWidth = profile.layout.ocrWidth ?? video.videoWidth;
+    const scale = Math.min(2, Math.max(1, targetWidth / video.videoWidth));
+    const full = canvas(video.videoWidth * scale, video.videoHeight * scale);
+    full.imageSmoothingQuality = "high";
     const readAt = async (time: number): Promise<ScanItem> => {
       await seek(time);
-      full.drawImage(video, 0, 0);
+      full.drawImage(video, 0, 0, full.canvas.width, full.canvas.height);
       const frame = full.getImageData(
         0,
         0,
-        video.videoWidth,
-        video.videoHeight,
+        full.canvas.width,
+        full.canvas.height,
       );
-      const card = profile.layout.locate(frame);
       const result = await abortable(
         recognizeArtifact(frame, ocr!.read, profile.locale, profile.layout),
         signal,
       );
       signal.throwIfAborted();
+      const card = result?.layout;
       const r = card?.card ?? {
         x: frame.width * 0.65,
         y: frame.height * 0.08,
@@ -129,10 +136,11 @@ export async function scanVideo(
       return {
         time,
         draft: result?.draft ?? {},
+        unsupportedOwner: result?.unsupportedOwner,
         issues: result?.issues ?? ["card"],
-        image: preview(video, card?.thumbnail ?? r, 112),
+        image: preview(full.canvas, card?.thumbnail ?? r, 112),
         detail: preview(
-          video,
+          full.canvas,
           {
             ...r,
             height: Math.min(

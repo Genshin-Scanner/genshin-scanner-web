@@ -29,3 +29,5 @@ The exported `recordingAccept` string can be passed to a file picker. `scanVideo
 Pass the URL of a static directory containing `worker.min.js`, the Tesseract core JavaScript and WebAssembly variants, and `eng.traineddata.gz`. In this monorepo, `bun run ocr:assets` prepares that directory in `apps/web/public/ocr/`. An embedding application can serve its contents, including the notices, under its own base URL. The browser loads these files on demand. It reads the recording locally.
 
 For single images, call `openBrowserOcr(assetBase)`, pass its `read` function to the [core recognizer](../core/README.md), and call `close()` in a `finally` block. See the [OCR model and runtime notices](OCR.md).
+
+The PC profile enlarges lower-resolution video frames before OCR. The detection pass uses a smaller canvas. Both passes share one video element and read one timestamp at a time. An embedding app can set `profile.locale` to `createEnglishProfile(names)` from the core to resolve custom character names.

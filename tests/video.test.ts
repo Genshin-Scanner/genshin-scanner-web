@@ -63,3 +63,15 @@ test("a one-pixel compression change on one paper scanline preserves the card fi
   frame.data[(122 * width + 389) * 4] = 0;
   expect(markFrame(frame, layout)?.values).toEqual(original!.values);
 });
+test("separates identical icons when several independent substat lines change", () => {
+  const values = new Uint8Array(18 * 20 + 24 * 10 + 72 * 22);
+  const before = { values, quality: 1 };
+  const after = { values: values.slice(), quality: 1 };
+  for (const row of [2, 7, 12])
+    after.values.fill(40, 600 + row * 72, 600 + row * 72 + 8);
+  const d = new SegmentDetector();
+  const segments = [before, before, after, after]
+    .map((m, i) => d.push(i * 0.1, m))
+    .filter(Boolean);
+  expect([...segments, d.flush()].map((s) => s?.start)).toEqual([0, 0.2]);
+});
