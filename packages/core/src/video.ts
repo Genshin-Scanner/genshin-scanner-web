@@ -402,12 +402,18 @@ export class SegmentDetector {
     return finished;
   }
   private segment(run: Run): Segment {
+    // The outline can start changing before the weapon's detail panel does.
+    // Read inside the selection so a high-contrast transition cannot win.
+    const time =
+      run.mark.kind === "weapon"
+        ? run.start + (run.end - run.start) / 2
+        : run.time;
     return {
       ...(run.mark.kind && { kind: run.mark.kind }),
       rarity: run.mark.rarity,
       start: run.start,
       end: run.end,
-      time: run.time,
+      time,
       alternate: run.alternate ?? run.end,
     };
   }

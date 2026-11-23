@@ -145,7 +145,8 @@ export function locateInventoryPanel(p: Pixels, weapon = false) {
     titleY,
     headerEnd,
     (y) =>
-      count(p, y, x + width * 0.04, x + width * 0.5, stars) > width * 0.045,
+      count(p, y, x + width * 0.04, x + width * 0.5, stars) >
+      width * (weapon ? 0.018 : 0.045),
   );
   if (!starRows.length) return;
   const starRow = starRows.at(-1)!;
