@@ -26,12 +26,13 @@ Open the local URL printed by Vite. To build the static site, run `bun run build
 
 ## Development
 
-| Workspace                                        | Use it for                                                                      |
-| ------------------------------------------------ | ------------------------------------------------------------------------------- |
-| [`@scanner/good`](packages/good/README.md)       | GOOD types, validation, export, and updating the pinned Optimizer schema.       |
-| [`@scanner/core`](packages/core/README.md)       | Recognizing artifacts from pixels with an OCR function supplied by the caller.  |
+<!-- prettier-ignore -->
+| Workspace | Use it for |
+|-----------|------------|
+| [`@scanner/good`](packages/good/README.md) | GOOD types, validation, export, and updating the pinned Optimizer schema. |
+| [`@scanner/core`](packages/core/README.md) | Recognizing artifacts from pixels with an OCR function supplied by the caller. |
 | [`@scanner/browser`](packages/browser/README.md) | Scanning a local video in a browser, including decoding, OCR, and cancellation. |
-| [`@scanner/web`](apps/web/README.md)             | Running the React application to scan, review, and download artifacts.          |
+| [`@scanner/web`](apps/web/README.md) | Running the React application to scan, review, and download artifacts. |
 
 ### Using the libraries in another project
 
@@ -43,21 +44,22 @@ Run `bun pm pack` in each library and test the tarballs together in a clean cons
 
 Run these commands from the repository root after installing dependencies.
 
-| Command                 | Purpose                                                                                                                                                                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bun run dev`           | Prepare local OCR assets and start the Vite development server.                                                                                                                                                                           |
-| `bun run build:libs`    | Build the three libraries as ES modules and emit TypeScript declarations in each package's `dist/` directory.                                                                                                                             |
-| `bun run ocr:assets`    | Copy the OCR worker, WebAssembly runtimes, English model, and license notices into `apps/web/public/ocr/`.                                                                                                                                |
-| `bun run build`         | Build the libraries, prepare OCR assets, and produce the static site in `apps/web/dist/`.                                                                                                                                                 |
-| `bun run test`          | Run the public Bun tests in `tests/` using synthetic or public fixtures.                                                                                                                                                                  |
-| `bun run typecheck`     | Check TypeScript across the project and check the core separately without DOM types.                                                                                                                                                      |
-| `bun run format`        | Rewrite project files using Prettier and the repository's ignore rules.                                                                                                                                                                   |
-| `bun run format:check`  | Report files that would change under Prettier.                                                                                                                                                                                            |
-| `bun run check`         | Run the public tests, formatting check, type checks, and production build in sequence.                                                                                                                                                    |
-| `bun run check:frames`  | Run English OCR on the three private reference PNGs in `test-assets/` and check recognized fields and review flags.                                                                                                                       |
-| `bun run check:video`   | Use FFmpeg to compare the detector's count and order with the 33 reference PNGs for `test-assets/33-1/video.mp4`.                                                                                                                         |
+<!-- prettier-ignore -->
+| Command | Purpose |
+|---------|---------|
+| `bun run dev` | Prepare local OCR assets and start the Vite development server. |
+| `bun run build:libs` | Build the three libraries as ES modules and emit TypeScript declarations in each package's `dist/` directory. |
+| `bun run ocr:assets` | Copy the OCR worker, WebAssembly runtimes, English model, and license notices into `apps/web/public/ocr/`. |
+| `bun run build` | Build the libraries, prepare OCR assets, and produce the static site in `apps/web/dist/`. |
+| `bun run test` | Run the public Bun tests in `tests/` using synthetic or public fixtures. |
+| `bun run typecheck` | Check TypeScript across the project and check the core separately without DOM types. |
+| `bun run format` | Rewrite project files using Prettier and the repository's ignore rules. |
+| `bun run format:check` | Report files that would change under Prettier. |
+| `bun run check` | Run the public tests, formatting check, type checks, and production build in sequence. |
+| `bun run check:frames` | Run English OCR on the three private reference PNGs in `test-assets/` and check recognized fields and review flags. |
+| `bun run check:video` | Use FFmpeg to compare the detector's count and order with the 33 reference PNGs for `test-assets/33-1/video.mp4`. |
 | `bun run check:browser` | Test cancellation, review, exclusion, and GOOD download against the private recording and annotations. Run `bun run build` first. Requires Node with TypeScript support and an installed Playwright-compatible browser. Defaults to Edge. |
-| `bun run check:corpus`  | Compare raw scan results with manual GOOD annotations in Edge. Accepts a recording and an optional reference file. See [recognition checks](docs/recognition.md).                                                                         |
+| `bun run check:corpus` | Compare raw scan results with manual GOOD annotations in Edge. Accepts a recording and an optional reference file. See [recognition checks](docs/recognition.md). |
 
 For another browser, use e.g. `bun run check:browser firefox`. The optional arguments are the browser (`msedge`, `chrome`, `chromium`, `firefox`, or `webkit`), the recording path, and the number of repetitions of the reference clip in that recording. Append `--expect-remux` to require the local repackaging step for an unindexed fixture. See the [verification results](docs/PROJECT-STATE.md#verification) and [v1 architecture](docs/v1-ARCHITECTURE.md).
 

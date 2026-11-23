@@ -3,6 +3,7 @@ import { CustomOwners } from "./components/CustomOwners";
 import { loadCustomOwners, saveCustomOwners } from "./customOwners";
 import { useTranslation } from "react-i18next";
 import { AppHeader } from "./components/AppHeader";
+import { AppFooter } from "./components/AppFooter";
 import { RecordingPicker } from "./components/RecordingPicker";
 import { ReviewSummary } from "./components/ReviewSummary";
 import { ArtifactList } from "./components/ArtifactList";
@@ -34,9 +35,9 @@ export function App() {
   }, [rows, scan.progress]);
 
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <AppHeader />
-      <main className="mx-auto my-9 max-w-275 px-4 pb-16 sm:my-16 sm:px-7">
+      <main className="mx-auto my-9 w-full max-w-275 grow px-4 pb-16 sm:my-16 sm:px-7">
         <h1 className="font-serif text-[clamp(2.5rem,6vw,4.5rem)] leading-tight tracking-tight text-emerald-950">
           {t("title")}
         </h1>
@@ -73,6 +74,7 @@ export function App() {
           </>
         )}
       </main>
-    </>
+      <AppFooter />
+    </div>
   );
 }

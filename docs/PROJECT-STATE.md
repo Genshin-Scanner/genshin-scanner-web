@@ -8,27 +8,31 @@ Custom character names are optional, saved on the device, and applied to the nex
 
 ## Running the site
 
+The site footer credits the project contributors and links to the source repository and the MIT license served with the build.
+
 From the repository root, run `bun install --frozen-lockfile`, then `bun run dev`. Vite prints the local URL. Run `bun run build` to generate the static site in `apps/web/dist/`. A GitHub Pages deployment is pending.
 
 ## Verification
 
-| Command                                        | What it checks                                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `bun run check`                                | Public regression tests, Prettier, TypeScript, and production builds of the three libraries and the site.                                                                                                                                                                                                          |
-| `bun run check:frames`                         | Local OCR on three private reference PNGs.                                                                                                                                                                                                                                                                         |
-| `bun run check:video`                          | Uses FFmpeg to decode the recording and compares the detector’s item sequence with 33 reference PNGs.                                                                                                                                                                                                              |
-| `bun run check:browser msedge`                 | Exercises cancellation, correction, exclusion, and download through the production UI. Also accepts `chromium`, `firefox`, or `webkit`. Requires Node with TypeScript support, the selected browser, a production build, the private recording, and the manual reference data in `test-assets/33-1/expected.json`. |
-| `bun run check:corpus [recording] [reference]` | Runs Edge and compares the raw scan with every annotated field in selection order. [Private corpus workflow](recognition.md)                                                                                                                                                                                       |
+<!-- prettier-ignore -->
+| Command | What it checks |
+|---------|----------------|
+| `bun run check` | Public regression tests, Prettier, TypeScript, and production builds of the three libraries and the site. |
+| `bun run check:frames` | Local OCR on three private reference PNGs. |
+| `bun run check:video` | Uses FFmpeg to decode the recording and compares the detector’s item sequence with 33 reference PNGs. |
+| `bun run check:browser msedge` | Exercises cancellation, correction, exclusion, and download through the production UI. Also accepts `chromium`, `firefox`, or `webkit`. Requires Node with TypeScript support, the selected browser, a production build, the private recording, and the manual reference data in `test-assets/33-1/expected.json`. |
+| `bun run check:corpus [recording] [reference]` | Runs Edge and compares the raw scan with every annotated field in selection order. [Private corpus workflow](recognition.md) |
 
 ### Raw recognition results
 
 Edge 158.0.4370.33 produced the following results before any UI corrections, with the recorded Traveler name supplied. Each exact match includes equipped owner, lock state, active and unactivated substats. The per-recording references account for two differences verified on the source frames. [Reference details](recognition.md#november-2026-private-references)
 
-| Recording                                               | Selections found | Exact matches | Flagged before → after |
-| ------------------------------------------------------- | ---------------: | ------------: | ---------------------: |
-| 33-item reference                                       |               33 |            33 |                  7 → 0 |
-| 120-item ShadowPlay, 1920×1200                          |              120 |           120 |                 20 → 0 |
-| 120-item OBS, 1280×720, including its opening selection |              121 |           121 |                 99 → 0 |
+<!-- prettier-ignore -->
+| Recording | Selections found | Exact matches | Flagged before → after |
+|-----------|-----------------:|--------------:|-----------------------:|
+| 33-item reference | 33 | 33 | 7 → 0 |
+| 120-item ShadowPlay, 1920×1200 | 120 | 120 | 20 → 0 |
+| 120-item OBS, 1280×720, including its opening selection | 121 | 121 | 99 → 0 |
 
 The previous OBS scanner returned 119 cards. The updated detector distinguishes consecutive plumes by changes across multiple substat lines. The public tests include cropped numeric regressions for 11.1%, 11.7%, and Elemental Mastery +21.
 

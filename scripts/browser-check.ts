@@ -35,8 +35,33 @@ try {
       throw new Error("Unexpected network request: " + url.origin);
     });
     await page.goto(base);
+    const footer = page.getByRole("contentinfo");
+    assert.ok(
+      (await footer.innerText()).includes(
+        "© 2026 Genshin Scanner contributors",
+      ),
+    );
+    assert.equal(
+      await footer.getByRole("link", { name: "GitHub" }).getAttribute("href"),
+      "https://github.com/Genshin-Scanner/genshin-scanner-web",
+    );
+    const licenseLink = footer.getByRole("link", { name: "MIT License" });
+    const licenseUrl = await licenseLink.evaluate(
+      (link: HTMLAnchorElement) => link.href,
+    );
+    assert.equal(
+      new URL(licenseUrl).pathname,
+      "/scanner/ocr/LICENSE-Genshin-Scanner.txt",
+    );
+    const licenseResponse = await page.request.get(licenseUrl);
+    assert.ok(licenseResponse.ok());
+    assert.equal(
+      await licenseResponse.text(),
+      await readFile("LICENSE", "utf8"),
+    );
     const language = page.getByRole("combobox", { name: "Interface language" });
     await language.selectOption("ru");
+    await footer.getByRole("link", { name: "Лицензия MIT" }).waitFor();
     await page
       .getByRole("heading", { name: "Сканирование артефактов" })
       .waitFor();

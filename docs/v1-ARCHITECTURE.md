@@ -8,12 +8,13 @@ A player selects a local recording, reviews the extracted cards, corrects uncert
 
 Bun manages workspaces, dependencies, the lockfile, and verification commands. Vite builds the site and standalone ES modules. TypeScript emits declarations for consumers. Packages import each other through their public entry points so a library can be embedded in Optimizer or moved to a separate repository.
 
-| Component          | Responsibility and interface                                                                                                                                                                                                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/core`    | Accepts frame dimensions, RGBA pixels, and timestamps. Identifies the screen, detects when a player selects an item, locates the card, and calls an injected OCR function. Returns the fields it read and reasons for review. Also accepts a single image. The caller supplies runtime dependencies. |
-| `packages/good`    | Adapts Optimizer schemas. Provides field types, lookup keys, completed-artifact validation, and GOOD serialization. The caller supplies the export source name.                                                                                                                                      |
-| `packages/browser` | Takes a local `File`, decodes it in the browser, supplies pixels to the core, runs OCR in a worker, bounds pending work, and releases resources. Reports progress and results, supports cancellation, and reads frames at specific timestamps for review.                                            |
-| `apps/web`         | Provides file selection, an artifact list, a review form, and download in React. Reports format errors and lets the player cancel a scan or explicitly exclude unresolved items.                                                                                                                     |
+<!-- prettier-ignore -->
+| Component | Responsibility and interface |
+|-----------|------------------------------|
+| `packages/core` | Accepts frame dimensions, RGBA pixels, and timestamps. Identifies the screen, detects when a player selects an item, locates the card, and calls an injected OCR function. Returns the fields it read and reasons for review. Also accepts a single image. The caller supplies runtime dependencies. |
+| `packages/good` | Adapts Optimizer schemas. Provides field types, lookup keys, completed-artifact validation, and GOOD serialization. The caller supplies the export source name. |
+| `packages/browser` | Takes a local `File`, decodes it in the browser, supplies pixels to the core, runs OCR in a worker, bounds pending work, and releases resources. Reports progress and results, supports cancellation, and reads frames at specific timestamps for review. |
+| `apps/web` | Provides file selection, an artifact list, a review form, and download in React. Reports format errors and lets the player cancel a scan or explicitly exclude unresolved items. |
 
 The site depends on the browser adapter, the adapter on the core, and the core on GOOD. The site also uses GOOD for export. The core's public types use numbers, typed arrays, keys, and OCR results. Its TypeScript checks run without the DOM library. An embedding application can supply its own pixels and OCR function or use the browser adapter for the complete video workflow.
 

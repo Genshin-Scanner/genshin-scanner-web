@@ -1,6 +1,7 @@
 {
   "appName": "Inventory Scanner",
   "language": "Interface language",
+  "license": "MIT License",
   "title": "Scan your artifacts",
   "intro": "Choose a recording of your inventory to review its artifacts and export them to Genshin Optimizer.",
   "chooseRecording": "Choose recording",

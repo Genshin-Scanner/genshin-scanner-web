@@ -1,10 +1,11 @@
 # Recording formats
 
-| Container      | Video codecs targeted by the scanner |
-| -------------- | ------------------------------------ |
-| MP4            | H.264 (AVC), H.265 (HEVC), AV1       |
-| WebM           | VP8, VP9                             |
-| Matroska (MKV) | H.264, HEVC, AV1                     |
+<!-- prettier-ignore -->
+| Container | Video codecs targeted by the scanner |
+|-----------|--------------------------------------|
+| MP4 | H.264 (AVC), H.265 (HEVC), AV1 |
+| WebM | VP8, VP9 |
+| Matroska (MKV) | H.264, HEVC, AV1 |
 
 The adapter opens the actual local file in an HTML video element, checks its dimensions and duration, seeks into the recording, and returns to the beginning before detecting cards. Browser, OS, hardware, and codec profile all affect decoding. H.264 in MP4 is a useful fallback when a device cannot decode the original track.
 
@@ -18,15 +19,16 @@ Preparation uses memory or browser-managed Blob storage roughly proportional to 
 
 Each **33/33** entry means that the scanner found all 33 selections in order and every exported artifact matched the independent annotations after review. The matrix covers one 1920×1200 SDR recording and the listed browser builds. Other OS decoders, HDR or 10-bit profiles, and Safari on macOS need separate tests.
 
+<!-- prettier-ignore -->
 | Container | Video | Edge 158.0.4370.33 | Firefox 159.0 |
-| --------- | ----- | ------------------ | ------------- |
-| MP4       | AV1   | 33/33              | 33/33         |
-| MP4       | HEVC  | 33/33              | Decoder error |
-| WebM      | VP8   | 33/33              | 33/33         |
-| WebM      | VP9   | 33/33              | 33/33         |
-| MKV       | H.264 | 33/33              | 33/33         |
-| MKV       | HEVC  | 33/33              | Decoder error |
-| MKV       | AV1   | 33/33              | 33/33         |
+|-----------|-------|--------------------|---------------|
+| MP4 | AV1 | 33/33 | 33/33 |
+| MP4 | HEVC | 33/33 | Decoder error |
+| WebM | VP8 | 33/33 | 33/33 |
+| WebM | VP9 | 33/33 | 33/33 |
+| MKV | H.264 | 33/33 | 33/33 |
+| MKV | HEVC | 33/33 | Decoder error |
+| MKV | AV1 | 33/33 | 33/33 |
 
 Firefox on this machine rejected both HEVC tracks during actual playback. In both cases the app showed a localized decoding message and allowed a new file selection. In Edge, streaming variants without a stored duration also completed the full export after local repackaging: MKV with H.264, HEVC, or AV1 and WebM with VP9.
 
@@ -46,11 +48,12 @@ bun run check:browser msedge test-assets/reference-hevc.mkv
 
 For comparable fixtures, preserve the original 1920×1200 dimensions. The test encodes used `-vf fps=15 -pix_fmt yuv420p -g 30` and the following settings. The H.264 MKV was remuxed directly from the original recording at its original frame rate.
 
-| Codec | FFmpeg encoding options                                               |
-| ----- | --------------------------------------------------------------------- |
-| AV1   | `-c:v libaom-av1 -cpu-used 6 -row-mt 1 -crf 20 -b:v 0`                |
-| HEVC  | `-c:v libx265 -preset fast -crf 18 -tag:v hvc1` (MP4)                 |
-| VP8   | `-c:v libvpx -deadline good -cpu-used 3 -crf 6 -b:v 12M`              |
-| VP9   | `-c:v libvpx-vp9 -deadline good -cpu-used 4 -row-mt 1 -crf 18 -b:v 0` |
+<!-- prettier-ignore -->
+| Codec | FFmpeg encoding options |
+|-------|-------------------------|
+| AV1 | `-c:v libaom-av1 -cpu-used 6 -row-mt 1 -crf 20 -b:v 0` |
+| HEVC | `-c:v libx265 -preset fast -crf 18 -tag:v hvc1` (MP4) |
+| VP8 | `-c:v libvpx -deadline good -cpu-used 3 -crf 6 -b:v 12M` |
+| VP9 | `-c:v libvpx-vp9 -deadline good -cpu-used 4 -row-mt 1 -crf 18 -b:v 0` |
 
 For Matroska or WebM, FFmpeg's `-live 1` muxer option creates a streaming variant. Append `--expect-remux` to the browser command to verify the preparation stage on a browser that cannot seek the original. The standard command accepts either the native or repackaged path.
