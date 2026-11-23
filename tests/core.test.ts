@@ -78,6 +78,10 @@ test("wrapped titles and an elixir banner preserve the full panel and both set-n
   expect(crafted.rarity).toBe(5);
   expect(crafted.card.width).toBe(200);
   expect(crafted.mainLabel).toEqual(ordinary.mainLabel);
+  const mainLabel = crafted.mainLabel!;
+  expect(mainLabel.x + mainLabel.width).toBeLessThan(
+    crafted.card.x + crafted.card.width * 0.56,
+  );
   expect(crafted.slotLabel).toEqual(ordinary.slotLabel);
   expect(crafted.level.y - ordinary.level.y).toBe(18);
   expect(crafted.set.height).toBeGreaterThan(19);

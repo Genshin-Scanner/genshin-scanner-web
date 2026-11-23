@@ -287,7 +287,7 @@ export const pcLayout: LayoutProfile = {
       lock: red > width * 0.025,
       header: rect(0.045, titleY + 3, 0.53, starTop - titleY - 5),
       slotLabel: rect(0.045, headerEnd - 0.45 * width, 0.5, 0.09 * width),
-      mainLabel: rect(0.045, headerEnd - 0.28 * width, 0.57, 0.073 * width),
+      mainLabel: rect(0.045, headerEnd - 0.28 * width, 0.51, 0.073 * width),
       mainValue: rect(0.045, headerEnd - 0.22 * width, 0.48, 0.12 * width),
       level,
       stats: rect(
