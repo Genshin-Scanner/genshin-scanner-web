@@ -21,15 +21,19 @@ export function splitStatLines(image: Pixels): Pixels[] {
     if (previous && row[0] - previous[1] <= 4) previous[1] = row[1];
     else lines.push([...row]);
   }
-  return lines.map(([top, bottom]) => {
-    const y = Math.max(0, top - 5);
-    return crop(image, {
-      x: 0,
-      y,
-      width: image.width,
-      height: Math.min(image.height, bottom + 5) - y,
+  // A clipped stroke from the set heading can appear below the real stats.
+  const minLineHeight = Math.max(3, Math.round(image.width * 0.02));
+  return lines
+    .filter(([top, bottom]) => bottom - top >= minLineHeight)
+    .map(([top, bottom]) => {
+      const y = Math.max(0, top - 5);
+      return crop(image, {
+        x: 0,
+        y,
+        width: image.width,
+        height: Math.min(image.height, bottom + 5) - y,
+      });
     });
-  });
 }
 // The upstream scanner separates the header, paper and green set heading before OCR.
 export function prepareText(image: Pixels, field: Field): Pixels {

@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { PNG } from "pngjs";
-import { statNumber } from "../packages/core/src/stat-digits";
+import { mainNumber, statNumber } from "../packages/core/src/stat-digits";
 import { crop, splitStatLines, type Pixels } from "../packages/core/src";
 
 function paper(): Pixels {
@@ -41,6 +41,21 @@ test("retains gray unactivated text and numeric evidence", () => {
 
 test("empty paper has no text lines", () => {
   expect(splitStatLines(paper())).toEqual([]);
+});
+
+test("a clipped set heading does not add an OCR stat line", () => {
+  const image = paper();
+  ink(image, 8, 20);
+  ink(image, 35, 46);
+  ink(image, 67, 69);
+  expect(splitStatLines(image)).toHaveLength(2);
+});
+
+test("reads all three main HP digits when line OCR drops the first two", () => {
+  const fixture = PNG.sync.read(
+    readFileSync(new URL("./fixtures/main-hp-717.png", import.meta.url)),
+  );
+  expect(mainNumber(fixture)).toBe("717");
 });
 
 test("reads the complete values of annotated ATK, DEF and Elemental Mastery lines", () => {

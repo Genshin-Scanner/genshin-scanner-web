@@ -28,6 +28,17 @@ test("checks the displayed main value against the level", () => {
   };
   expect(english.parse(text, 5).level).toBeUndefined();
 });
+
+test("attaches a wrapped unactivated marker to the preceding stat", async () => {
+  const pixels = { width: 400, height: 56, data: new Uint8Array(400 * 56 * 4) };
+  const stats = await english.readStatLine!(pixels, async (_, field) => {
+    expect(field).toBe("stats");
+    return "Elemental Mastery+16\n(unactivated)";
+  });
+  const draft = english.parse({ header: "", level: "+0", set: "", stats });
+  expect(draft.substats).toEqual([]);
+  expect(draft.unactivatedSubstats).toEqual([{ key: "eleMas", value: 16 }]);
+});
 test("an obscured bonus suffix can still identify a Cryo goblet", () => {
   const read = (label: string) =>
     english.parse(

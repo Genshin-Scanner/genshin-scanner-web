@@ -4,6 +4,7 @@ import { english, type LocaleProfile, type Readings } from "./english";
 import { pcLayout, type LayoutProfile } from "./layout";
 import { crop, type Pixels } from "./pixels";
 import { splitStatLines } from "./prepare";
+import { mainNumber } from "./stat-digits";
 export * from "./pixels";
 export * from "./layout";
 export * from "./english";
@@ -74,12 +75,25 @@ export async function recognizeArtifact(
     }
   }
   if (parsed.level === undefined) {
-    const value = await read(
-      crop(frame, { ...card.mainValue, width: card.mainValue.width * 0.72 }),
-      "mainValueMask",
-    );
-    text.header += "\n" + value;
-    parsed = locale.parse(text, card.rarity);
+    const image = crop(frame, {
+      ...card.mainValue,
+      width: card.mainValue.width * 0.72,
+    });
+    const glyphs = mainNumber(image);
+    if (glyphs) {
+      const alternative = locale.parse(
+        { ...text, mainValue: glyphs },
+        card.rarity,
+      );
+      if (alternative.level !== undefined) {
+        text.mainValue = glyphs;
+        parsed = alternative;
+      }
+    }
+    if (parsed.level === undefined) {
+      text.header += "\n" + (await read(image, "mainValueMask"));
+      parsed = locale.parse(text, card.rarity);
+    }
   }
   if (
     card.equipped &&

@@ -34,3 +34,15 @@ test("an unknown or ambiguous owner requires review", () => {
   expect(owner(english, "Manekina").unsupportedOwner).toBe("Manekin");
   expect(owner(english, "Raiden Shogun").location).toBe("RaidenShogun");
 });
+
+test("handles the English OCR reading of sigma only for configured aliases", () => {
+  const profile = createEnglishProfile({ Wanderer: "Σ-Fox" });
+  expect(owner(profile, "Σ-Fox").location).toBe("Wanderer");
+  expect(owner(profile, "Z-Fox").location).toBe("Wanderer");
+  expect(owner(english, "Z-Fox").location).toBeUndefined();
+  const ambiguous = createEnglishProfile({
+    Wanderer: "Σ-Fox",
+    Manekin: "Z-Fox",
+  });
+  expect(owner(ambiguous, "Z-Fox").location).toBeUndefined();
+});

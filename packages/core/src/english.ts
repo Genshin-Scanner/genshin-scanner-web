@@ -112,7 +112,12 @@ export function createOwnerResolver(names: CustomOwnerNames = {}) {
   for (const key of allLocationCharacterKeys) addName(key, key);
   addName("Manekin", "Manekin");
   addName("Manekina", "Manekin");
-  for (const key of customOwnerKeys) addName(names[key] ?? "", key);
+  for (const key of customOwnerKeys) {
+    const name = ownerName(names[key] ?? "");
+    addName(name, key);
+    // English OCR can read a Greek capital sigma as a Latin Z.
+    if (/[σς]/u.test(name)) addName(name.replace(/[σς]/gu, "z"), key);
+  }
 
   function resolveOwner(equipped: string) {
     const name = ownerName(equipped.replace(/^.*?equipped\s*[:.]?\s*/i, ""));
@@ -143,6 +148,7 @@ export function createEnglishProfile(
   return {
     language: "eng",
     async readStatLine(line, read) {
+      if (line.height > line.width * 0.1) return read(line, "stats");
       const suffix = statNumber(line);
       if (!suffix) return read(line, "statLine");
       const label = crop(line, {
@@ -209,7 +215,13 @@ export function createEnglishProfile(
       }
       const substats: Artifact["substats"] = [],
         unactivatedSubstats: Artifact["substats"] = [];
+      const statRows: string[] = [];
       for (const line of t.stats.trim().split(/\n+/)) {
+        if (statRows.length && normalize(line) === "unactivated")
+          statRows[statRows.length - 1] += " (unactivated)";
+        else statRows.push(line);
+      }
+      for (const line of statRows) {
         const match = line.match(
           /^\s*[^a-zA-Z]*([a-zA-Z ]+?)\s*\+\s*([\d,]+(?:\.\d+)?)\s*(%)?\s*(.*?)\s*$/,
         );

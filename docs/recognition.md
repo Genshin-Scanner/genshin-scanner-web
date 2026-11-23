@@ -19,6 +19,8 @@ The detector samples a small frame ten times per second. It compares the icon, m
 
 The English profile reads the stat label and number separately when it can identify the plus sign and each following glyph. Compact templates describe aspect ratio and ink coverage of the digits and punctuation, aggregated from labeled stat lines. A low score margin, touching glyphs, or additional text triggers whole-line OCR. Game roll validation still applies. The public numeric fixture contains only three cropped stat lines.
 
+When the main-value OCR disagrees with the artifact level, the scanner can read isolated bright number glyphs and recheck the result against the game tables. The public HP fixture contains only the cropped digits from the reference panel. The stat line splitter drops short fragments from the set heading. A wrapped `unactivated` marker belongs to the preceding stat.
+
 ## November 2026 private references
 
 The 33-selection recording has a single matching reference. The two 120-item recordings share a reference for the intended inventory, with two verified timeline differences:

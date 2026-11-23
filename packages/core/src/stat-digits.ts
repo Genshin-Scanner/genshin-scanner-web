@@ -43,7 +43,7 @@ function isPlus(r: Rect, ink: Ink) {
   return horizontal >= 0.9 * w && vertical >= 0.9 * h;
 }
 
-function classify(r: Rect, ink: Ink, plusHeight: number) {
+function classify(r: Rect, ink: Ink, referenceHeight: number) {
   const cells: number[] = [];
   for (let row = 0; row < 8; row++) {
     const y = r.y + Math.min(r.height - 1, Math.round((row * r.height) / 8));
@@ -58,7 +58,7 @@ function classify(r: Rect, ink: Ink, plusHeight: number) {
     }
   }
   const ranked = templates
-    .filter((t) => (t.char === ".") === r.height < plusHeight * 0.6)
+    .filter((t) => (t.char === ".") === r.height < referenceHeight * 0.6)
     .map((t) => {
       const error =
         cells.reduce((sum, v, i) => sum + Math.abs(v - t.cells[i]), 0) /
@@ -76,6 +76,24 @@ function classify(r: Rect, ink: Ink, plusHeight: number) {
     return ranked[0].char;
 }
 
+function glyphBoxes(width: number, height: number, ink: Ink) {
+  const columns = bands(0, width, (x) => {
+    for (let y = 0; y < height; y++) if (ink(x, y)) return true;
+    return false;
+  });
+  return columns.map(([left, right]) => {
+    let top = height,
+      bottom = 0;
+    for (let x = left; x < right; x++)
+      for (let y = 0; y < height; y++)
+        if (ink(x, y)) {
+          top = Math.min(top, y);
+          bottom = Math.max(bottom, y + 1);
+        }
+    return { x: left, y: top, width: right - left, height: bottom - top };
+  });
+}
+
 /** Read a complete numeric suffix. Leave touching glyphs and inactive text to OCR. */
 function readAtThreshold(line: Pixels, threshold: number) {
   const { width, height, data } = line;
@@ -87,21 +105,7 @@ function readAtThreshold(line: Pixels, threshold: number) {
       data[i + 2] < threshold + 5
     );
   };
-  const columns = bands(0, width, (x) => {
-    for (let y = 0; y < height; y++) if (ink(x, y)) return true;
-    return false;
-  });
-  const boxes = columns.map(([left, right]) => {
-    let top = height,
-      bottom = 0;
-    for (let x = left; x < right; x++)
-      for (let y = 0; y < height; y++)
-        if (ink(x, y)) {
-          top = Math.min(top, y);
-          bottom = Math.max(bottom, y + 1);
-        }
-    return { x: left, y: top, width: right - left, height: bottom - top };
-  });
+  const boxes = glyphBoxes(width, height, ink);
   const plusIndex = boxes.findIndex((box) => isPlus(box, ink));
   if (plusIndex < 1) return;
   const plus = boxes[plusIndex],
@@ -123,4 +127,28 @@ export function statNumber(line: Pixels) {
     readAtThreshold(line, 135) ??
     readAtThreshold(line, 180)
   );
+}
+
+export function mainNumber(line: Pixels) {
+  const { width, height, data } = line;
+  const ink: Ink = (x, y) => {
+    const i = 4 * (y * width + x);
+    const r = data[i],
+      g = data[i + 1],
+      b = data[i + 2];
+    return (
+      Math.min(r, g, b) > 190 && Math.max(r, g, b) - Math.min(r, g, b) < 45
+    );
+  };
+  const boxes = glyphBoxes(width, height, ink);
+  if (boxes.length < 2 || boxes.length > 6) return;
+  const largest = Math.max(...boxes.map((box) => box.height));
+  if (largest < height * 0.35) return;
+  let value = "";
+  for (const box of boxes) {
+    const char = classify(box, ink, largest);
+    if (!char) return;
+    value += char;
+  }
+  if (/^(?:\d{1,4}|\d{1,2}\.\d%)$/.test(value)) return value;
 }
