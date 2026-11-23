@@ -1,8 +1,10 @@
 # @scanner/good
 
-Use this package to validate an artifact draft or export a list of artifacts as GOOD v3. It also exports the artifact set, slot, stat, and character keys used by the parser and editor.
+Use this package to validate artifact, weapon, and character drafts and export GOOD v3. It also exports the game keys and metadata used by the parser and editor.
 
 `validateArtifact(draft)` returns the fields that need review. It checks values that the upstream schema would otherwise default or clamp, as well as slot, rarity, and roll constraints. `exportGood(drafts, source?)` returns a typed object ready for `JSON.stringify` and throws if an artifact fails validation.
+
+`exportInventoryGood({ artifacts, weapons, characters }, source?)` validates and exports an inventory. It omits empty sections. `validateWeapon` and `validateCharacter` return field paths for review before export.
 
 ## Updating the GOOD types
 

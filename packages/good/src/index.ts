@@ -2,6 +2,12 @@ import statValues from "./upstream/stat-values.json";
 import { z } from "zod";
 import { artifactSchema } from "./upstream/artifact";
 import {
+  characterSchema,
+  weaponSchema,
+  type CharacterDraft,
+  type WeaponDraft,
+} from "./inventory";
+import {
   artSlotMainKeys,
   artMaxLevel,
   artSubstatRollData,
@@ -14,6 +20,7 @@ export {
   artSlotMainKeys,
 } from "./upstream/keys";
 export { allLocationCharacterKeys } from "./upstream/locations";
+export * from "./inventory";
 
 // The scanner writes only the artifact portion of the upstream GOOD v3 envelope.
 const goodSchema = z.object({
@@ -136,5 +143,34 @@ export function exportGood(
     version: 3,
     source,
     artifacts: drafts,
+  });
+}
+
+const inventorySchema = goodSchema.omit({ artifacts: true }).extend({
+  artifacts: z.array(artifactSchema).optional(),
+  weapons: z.array(weaponSchema).optional(),
+  characters: z.array(characterSchema).optional(),
+});
+
+export type InventoryGoodFile = z.infer<typeof inventorySchema>;
+
+export function exportInventoryGood(
+  inventory: {
+    artifacts?: readonly ArtifactDraft[];
+    weapons?: readonly WeaponDraft[];
+    characters?: readonly CharacterDraft[];
+  },
+  source = "genshin-scanner",
+): InventoryGoodFile {
+  const { artifacts, weapons, characters } = inventory;
+  return inventorySchema.parse({
+    format: "GOOD",
+    version: 3,
+    source,
+    ...(artifacts?.length && {
+      artifacts: exportGood(artifacts, source).artifacts,
+    }),
+    ...(weapons?.length && { weapons }),
+    ...(characters?.length && { characters }),
   });
 }

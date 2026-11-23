@@ -1,5 +1,9 @@
 # GOOD sources
 
-`src/upstream` contains the artifact schema, key tables, and Zod helpers from Genshin Optimizer. The adapter includes the dependencies used to read artifacts and resolves their imports locally. The export envelope covers artifacts in GOOD v3. The [upstream MIT license](src/upstream/LICENSE) is included alongside the sources.
+`src/upstream` contains the artifact schema, key tables, and Zod helpers from Genshin Optimizer. The adapter exports weapons, artifacts, and characters in GOOD v3. The [upstream MIT license](src/upstream/LICENSE) is included alongside the sources.
 
 The tables in `stat-values.json` come from `libs/gi/stats/Data/Artifacts` at the same revision. For 4★ and 5★ artifacts they preserve main stat values and the possible roll counts for each displayed substat value, including rounding corrections. [Pinned revision f24bcb8](https://github.com/frzyc/genshin-optimizer/tree/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi) · [GOOD format schema](https://github.com/frzyc/genshin-optimizer/blob/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/good/src/schemas/good-format.ts)
+
+`weapon-data.ts` combines weapon names from `dm-localization/assets/locales/en/weaponNames_gen.json` with rarity and weapon type from `stats/src/allStat_gen.json`. `character-weapon-types.ts` extracts weapon types from the character section of the same stats file. `traveler-keys.ts` copies the elemental Traveler keys from `consts/src/character.ts`. The matching Russian names in the web app come from `dm-localization/assets/locales/ru/weaponNames_gen.json`. [Pinned game data](https://github.com/frzyc/genshin-optimizer/tree/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi)
+
+`src/inventory.ts` adapts the pinned weapon and character Zod schemas and level and talent rules. The scanner rejects missing or inconsistent values before export. [Weapon schema](https://github.com/frzyc/genshin-optimizer/blob/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/schema/src/weapon/schema.ts) · [Character schema](https://github.com/frzyc/genshin-optimizer/blob/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/schema/src/character/schema.ts)

@@ -14,4 +14,6 @@ For each sampled frame in chronological order, pass `markFrame(frame)` and its t
 
 The defaults target the English PC inventory. Supply a `LocaleProfile` to change text parsing and a `LayoutProfile` to locate fields in a different layout. A new inventory layout may also need its own frame marker for video selection detection.
 
+`markInventoryFrame(frame)` recognizes weapon and artifact tabs and produces a kind-aware segment marker. `recognizeWeapon(frame, read, names?)` reads the 3–5★ weapon panel using the same injected OCR interface and the configured character aliases.
+
 Use `createEnglishProfile({ Traveler, Wanderer, Manekin })` to supply optional in-game names to `recognizeArtifact`. Ambiguous or unknown owners require review. The pinned GOOD schema has no Manekin key. A confirmed match carries `unsupportedOwner: "Manekin"` alongside the draft. The default English profile can read the numeric suffix of each stat from its pixels and falls back to the injected OCR for uncertain shapes. See the [recognition notes](../../docs/recognition.md).

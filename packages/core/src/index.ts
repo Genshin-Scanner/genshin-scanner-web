@@ -14,6 +14,9 @@ export type Field =
   | "mainValueMask"
   | "mainValue"
   | "level"
+  | "weaponTitle"
+  | "weaponLevel"
+  | "weaponRefinement"
   | "stats"
   | "statLine"
   | "set"
@@ -110,3 +113,4 @@ export async function recognizeArtifact(
 }
 export { prepareText, splitStatLines } from "./prepare";
 export * from "./video";
+export * from "./weapon";

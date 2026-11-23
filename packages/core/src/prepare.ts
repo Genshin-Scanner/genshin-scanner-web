@@ -45,6 +45,7 @@ export function prepareText(image: Pixels, field: Field): Pixels {
       const [r, g, b] = [image.data[i], image.data[i + 1], image.data[i + 2]];
       let ink: boolean;
       switch (field) {
+        case "weaponTitle":
         case "mainValueMask":
         case "header":
           ink =
@@ -55,6 +56,12 @@ export function prepareText(image: Pixels, field: Field): Pixels {
           break;
         case "level":
           ink = r > 223 && g > 225 && b > 224;
+          break;
+        case "weaponLevel":
+          ink = r > 113 && g > 118 && b > 123;
+          break;
+        case "weaponRefinement":
+          ink = r > 130 && g > 105 && g < 207 && r > b * 1.24 && g > b * 1.1;
           break;
         case "ownerLine":
           // A thinner stroke keeps the descender of a lowercase q open on small recordings.

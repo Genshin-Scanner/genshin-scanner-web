@@ -20,6 +20,8 @@ async function scan(file: File, assetBase: URL, signal: AbortSignal) {
 
 Each item includes its timestamp in seconds, artifact draft, review issues, thumbnail (`image`), and detail crop (`detail`). The returned count covers detected selections skipped because of rarity. To cancel, abort the controller that owns the signal. A caller that supplies its own game profile can pass it as the sixth argument.
 
+For a mixed inventory, use `scanInventoryVideo(file, assetBase, signal, progress, onItem, names?)`. Its item callback receives a discriminated union with `kind: "artifact"` or `kind: "weapon"`. The result counts rarity skips by kind. The optional `names` object configures custom equipped names for both kinds of item.
+
 ## Recording input
 
 The exported `recordingAccept` string can be passed to a file picker. `scanVideo` checks the actual video dimensions, finite duration, and forward and backward seeks. The native path uses a blob URL for the original file. If a Matroska or WebM input fails the opening checks, the adapter loads Mediabunny and copies compressed video packets to a seekable local Blob. The host receives `Preparing recording` with `total: 0` for indeterminate progress. An abort signal also cancels preparation. See [formats, limitations, and verification](../../docs/recording-formats.md).

@@ -2,8 +2,11 @@ import { ScanError } from "./error";
 import { abortable } from "./abort";
 import {
   markFrame,
-  SegmentDetector,
+  markInventoryFrame,
+  inventoryKind,
+  InventorySegmentDetector,
   recognizeArtifact,
+  recognizeWeapon,
   pcLayout,
   english,
   type LocaleProfile,
@@ -12,8 +15,10 @@ import {
   type Mark,
   type Segment,
   type Rect,
+  type CustomOwnerNames,
+  createEnglishProfile,
 } from "@scanner/core";
-import type { ArtifactDraft } from "@scanner/good";
+import type { ArtifactDraft, WeaponDraft } from "@scanner/good";
 import { openRecording } from "./recording";
 import { openBrowserOcr } from "./ocr";
 export interface ScanProfile {
@@ -21,13 +26,22 @@ export interface ScanProfile {
   layout: LayoutProfile;
   mark: (frame: Pixels) => Mark | undefined;
 }
-export interface ScanItem {
+interface ScanEvidence {
   unsupportedOwner?: "Manekin";
   time: number;
-  draft: ArtifactDraft;
   issues: string[];
   image: string;
   detail: string;
+}
+export interface ScanItem extends ScanEvidence {
+  draft: ArtifactDraft;
+}
+export type InventoryScanItem =
+  | (ScanItem & { kind: "artifact" })
+  | (ScanEvidence & { kind: "weapon"; draft: WeaponDraft; rarity?: number });
+export interface SkippedInventory {
+  artifacts: number;
+  weapons: number;
 }
 export type ScanProgress = {
   phase: "Preparing recording" | "Finding cards" | "Reading cards";
@@ -67,6 +81,54 @@ export async function scanVideo(
   profile?: ScanProfile,
 ) {
   profile ??= { locale: english, layout: pcLayout, mark: markFrame };
+  const skipped = await scanRecording(
+    file,
+    modelBase,
+    signal,
+    progress,
+    (item) => {
+      if (item.kind === "artifact") {
+        const { kind: _, ...artifact } = item;
+        onItem(artifact);
+      }
+    },
+    profile,
+  );
+  return skipped.artifacts;
+}
+
+export function scanInventoryVideo(
+  file: File,
+  modelBase: URL,
+  signal: AbortSignal,
+  progress: (p: ScanProgress) => void,
+  onItem: (i: InventoryScanItem) => void,
+  names: CustomOwnerNames = {},
+) {
+  return scanRecording(
+    file,
+    modelBase,
+    signal,
+    progress,
+    onItem,
+    {
+      locale: createEnglishProfile(names),
+      layout: pcLayout,
+      mark: markInventoryFrame,
+    },
+    names,
+  );
+}
+
+async function scanRecording(
+  file: File,
+  modelBase: URL,
+  signal: AbortSignal,
+  progress: (p: ScanProgress) => void,
+  onItem: (i: InventoryScanItem) => void,
+  profile: ScanProfile,
+  names?: CustomOwnerNames,
+): Promise<SkippedInventory> {
   const { video, seek, close } = await openRecording(file, signal, () =>
     progress({ phase: "Preparing recording", done: 0, total: 0 }),
   );
@@ -75,7 +137,7 @@ export async function scanVideo(
     const width = Math.min(video.videoWidth, 960),
       small = canvas(width, (video.videoHeight * width) / video.videoWidth);
     const detected: Segment[] = [];
-    const d = new SegmentDetector();
+    const detector = new InventorySegmentDetector();
     const steps = Math.ceil(video.duration * 10);
     // A seek changes the shared video element. Draw its frame before requesting the next one.
     for (let i = 0; i < steps; i++) {
@@ -87,14 +149,22 @@ export async function scanVideo(
         small.canvas.width,
         small.canvas.height,
       );
-      const s = d.push(i / 10, profile.mark(frame));
-      if (s) detected.push(s);
+      detected.push(...detector.push(i / 10, profile.mark(frame)));
       progress({ phase: "Finding cards", done: i + 1, total: steps });
     }
-    const last = d.flush();
-    if (last) detected.push(last);
-    const segments = detected.filter((s) => s.rarity === 4 || s.rarity === 5);
-    const skipped = detected.length - segments.length;
+    detected.push(...detector.flush());
+    detected.sort((a, b) => a.start - b.start);
+    const skipped = { artifacts: 0, weapons: 0 };
+    const segments = detected.filter((s) => {
+      if (s.kind === "weapon") {
+        if (s.rarity === 3 || s.rarity === 4 || s.rarity === 5) return true;
+        skipped.weapons++;
+      } else {
+        if (s.rarity === 4 || s.rarity === 5) return true;
+        skipped.artifacts++;
+      }
+      return false;
+    });
     if (!segments.length) return skipped;
     progress({ phase: "Reading cards", done: 0, total: segments.length });
     const starting = openBrowserOcr(modelBase, profile.locale.language);
@@ -112,7 +182,10 @@ export async function scanVideo(
     const scale = Math.min(2, Math.max(1, targetWidth / video.videoWidth));
     const full = canvas(video.videoWidth * scale, video.videoHeight * scale);
     full.imageSmoothingQuality = "high";
-    const readAt = async (time: number): Promise<ScanItem> => {
+    const readAt = async (
+      time: number,
+      segment: Segment,
+    ): Promise<InventoryScanItem> => {
       await seek(time);
       full.drawImage(video, 0, 0, full.canvas.width, full.canvas.height);
       const frame = full.getImageData(
@@ -121,10 +194,18 @@ export async function scanVideo(
         full.canvas.width,
         full.canvas.height,
       );
-      const result = await abortable(
-        recognizeArtifact(frame, ocr!.read, profile.locale, profile.layout),
-        signal,
-      );
+      const kind = segment.kind ?? "artifact";
+      const weapon =
+        kind === "weapon" &&
+        (await abortable(recognizeWeapon(frame, ocr!.read, names), signal));
+      const artifact =
+        kind === "artifact" &&
+        (!names || inventoryKind(frame) === kind) &&
+        (await abortable(
+          recognizeArtifact(frame, ocr!.read, profile.locale, profile.layout),
+          signal,
+        ));
+      const result = weapon || artifact || undefined;
       signal.throwIfAborted();
       const card = result?.layout;
       const r = card?.card ?? {
@@ -133,9 +214,8 @@ export async function scanVideo(
         width: frame.width * 0.3,
         height: frame.height * 0.78,
       };
-      return {
+      const evidence: ScanEvidence = {
         time,
-        draft: result?.draft ?? {},
         unsupportedOwner: result?.unsupportedOwner,
         issues: result?.issues ?? ["card"],
         image: preview(full.canvas, card?.thumbnail ?? r, 112),
@@ -145,17 +225,30 @@ export async function scanVideo(
             ...r,
             height: Math.min(
               frame.height - r.y,
-              r.height + (card?.equipped?.height ?? 0),
+              Math.max(
+                r.height,
+                card?.equipped
+                  ? card.equipped.y + card.equipped.height - r.y
+                  : 0,
+              ),
             ),
           },
           420,
         ),
       };
+      return kind === "weapon"
+        ? {
+            ...evidence,
+            kind,
+            draft: weapon ? weapon.draft : {},
+            rarity: weapon ? weapon.layout.rarity : segment.rarity,
+          }
+        : { ...evidence, kind, draft: artifact ? artifact.draft : {} };
     };
     for (const [i, segment] of segments.entries()) {
-      let item = await readAt(segment.time);
+      let item = await readAt(segment.time, segment);
       if (item.issues.length && segment.time !== segment.alternate) {
-        const alt = await readAt(segment.alternate);
+        const alt = await readAt(segment.alternate, segment);
         if (alt.issues.length < item.issues.length) item = alt;
       }
       onItem(item);

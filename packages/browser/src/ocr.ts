@@ -21,7 +21,9 @@ export async function openBrowserOcr(assetBase: URL, language = "eng") {
       0,
     );
     let tessedit_char_whitelist = "+0123456789";
-    if (field !== "level") {
+    if (field === "weaponLevel") {
+      tessedit_char_whitelist = "0123456789/";
+    } else if (field !== "level") {
       tessedit_char_whitelist =
         field === "mainValue" || field === "mainValueMask"
           ? "0123456789,.%"
@@ -29,7 +31,10 @@ export async function openBrowserOcr(assetBase: URL, language = "eng") {
     }
     await worker.setParameters({
       tessedit_pageseg_mode:
-        field === "header" || field === "stats" || field === "set"
+        field === "header" ||
+        field === "stats" ||
+        field === "set" ||
+        field === "weaponTitle"
           ? PSM.SINGLE_BLOCK
           : PSM.SINGLE_LINE,
       tessedit_char_whitelist,

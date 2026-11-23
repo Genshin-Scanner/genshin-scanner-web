@@ -1,4 +1,5 @@
 import { pcLayout, type LayoutProfile } from "./layout";
+import { inventoryKind, locateWeapon, type InventoryKind } from "./weapon";
 import {
   bands,
   matches,
@@ -7,6 +8,8 @@ import {
   type ColorTest,
 } from "./pixels";
 export interface Mark {
+  kind?: InventoryKind;
+  selection?: { column: number; center: number };
   rarity?: number;
   values: Uint8Array;
   column?: number;
@@ -15,11 +18,85 @@ export interface Mark {
   quality: number;
 }
 export interface Segment {
+  kind?: InventoryKind;
   rarity?: number;
   start: number;
   end: number;
   time: number;
   alternate: number;
+}
+function weaponSelection(p: Pixels, card: Rect): Mark["selection"] {
+  const width = card.width;
+  const candidates: { column: number; center: number; length: number }[] = [];
+  for (let column = 0; column < 8; column++) {
+    const predicted = card.x - width * (2.425 - column * 0.298);
+    const radius = Math.ceil(width * 0.024);
+    let best = { column, center: 0, length: 0 };
+    for (let x = Math.round(predicted) - radius; x <= predicted + radius; x++) {
+      if (x < width * 0.035 || x >= p.width) continue;
+      let run = 0;
+      for (let y = Math.round(p.height * 0.088); y < p.height * 0.893; y++) {
+        const near = grey(p, Math.round(x - width * 0.009), y);
+        const far = grey(p, Math.round(x - width * 0.023), y);
+        const bright = grey(p, x, y);
+        run = near > far + 18 && near < 238 && bright > 192 ? run + 1 : 0;
+        if (run > best.length)
+          best = { column, center: (y - run / 2) / width, length: run };
+      }
+    }
+    candidates.push(best);
+  }
+  candidates.sort((a, b) => b.length - a.length);
+  const [best, next] = candidates;
+  if (
+    best.length >= width * 0.12 &&
+    best.length - next.length > width * 0.023
+  ) {
+    return { column: best.column, center: best.center };
+  }
+}
+
+export function markInventoryFrame(p: Pixels): Mark | undefined {
+  const kind = inventoryKind(p);
+  if (kind === "artifact") {
+    const mark = markFrame(p);
+    return mark && { ...mark, kind };
+  }
+  if (kind !== "weapon") return;
+  const card = locateWeapon(p);
+  if (!card) return;
+  const { name, thumbnail, level, refinement, lockRegion, equipped } = card;
+  const values: number[] = [],
+    grid: number[] = [];
+  sample(p, name, 48, 10, values);
+  sample(p, thumbnail, 20, 18, values);
+  sample(p, level, 24, 10, values);
+  sample(p, refinement, 24, 8, values);
+  sample(p, lockRegion, 6, 8, values);
+  if (equipped) sample(p, equipped, 28, 8, values);
+  sample(
+    p,
+    {
+      x: p.width * 0.07,
+      y: p.height * 0.11,
+      width: card.card.x - p.width * 0.1,
+      height: p.height * 0.75,
+    },
+    32,
+    24,
+    grid,
+  );
+  let contrast = 0;
+  for (let i = 1; i < values.length; i++)
+    contrast += Math.abs(values[i] - values[i - 1]);
+  return {
+    kind,
+    rarity: card.rarity,
+    values: Uint8Array.from(values),
+    grid: Uint8Array.from(grid),
+    quality: contrast / values.length,
+    selection: weaponSelection(p, card.card),
+  };
 }
 function grey(p: Pixels, x: number, y: number) {
   const i = 4 * (Math.floor(y) * p.width + Math.floor(x));
@@ -200,6 +277,7 @@ function changedStatLines(a: Uint8Array, b: Uint8Array) {
   return changedLines >= 3;
 }
 export function sameMark(a: Mark, b: Mark) {
+  if (a.kind !== b.kind) return false;
   if (a.values.length !== b.values.length) return false;
   let differences = 0;
   for (let i = 0; i < a.values.length; i++)
@@ -209,6 +287,14 @@ export function sameMark(a: Mark, b: Mark) {
     changedStatLines(a.values, b.values)
   )
     return false;
+  if (a.kind === "weapon") {
+    return (
+      !a.selection ||
+      !b.selection ||
+      (a.selection.column === b.selection.column &&
+        Math.abs(a.selection.center - b.selection.center) < 0.19)
+    );
+  }
   if (a.column === undefined || b.column === undefined || a.column === b.column)
     return true;
   if (!a.icon || !b.icon) return false;
@@ -230,6 +316,7 @@ export class SegmentDetector {
   private pending?: Run;
   private previousGrid?: Uint8Array;
   private scrolling = false;
+  private weaponGridMoving = false;
   push(time: number, mark: Mark | undefined): Segment | undefined {
     if (!mark) {
       this.pending = undefined;
@@ -237,11 +324,20 @@ export class SegmentDetector {
       if (this.run && time - this.run.end > 1.5) return this.flush();
       return;
     }
-    if (this.previousGrid && mark.grid) {
+    const wasMoving = this.weaponGridMoving;
+    this.weaponGridMoving = false;
+    if (
+      this.previousGrid &&
+      mark.grid &&
+      (!this.run || this.run.mark.kind === mark.kind)
+    ) {
       let changed = 0;
       for (let i = 0; i < mark.grid.length; i++)
         if (Math.abs(mark.grid[i] - this.previousGrid[i]) > 16) changed++;
-      if (changed > mark.grid.length * 0.07) this.scrolling = true;
+      if (changed > mark.grid.length * 0.07) {
+        this.scrolling = true;
+        this.weaponGridMoving = mark.kind === "weapon";
+      }
     }
     this.previousGrid = mark.grid;
     const update = (run: Run) => {
@@ -260,6 +356,10 @@ export class SegmentDetector {
       sameMark(
         {
           ...this.run.mark,
+          selection:
+            this.weaponGridMoving || wasMoving
+              ? undefined
+              : this.run.mark.selection,
           column:
             this.scrolling || time - this.run.start < 0.5
               ? undefined
@@ -271,6 +371,13 @@ export class SegmentDetector {
       if (time - this.run.start < 0.5) {
         this.run.mark.column = mark.column;
         this.run.mark.icon = mark.icon;
+      }
+      if (
+        mark.kind === "weapon" &&
+        !this.weaponGridMoving &&
+        (wasMoving || !this.run.mark.selection)
+      ) {
+        this.run.mark.selection = mark.selection;
       }
       update(this.run);
       this.pending = undefined;
@@ -296,6 +403,7 @@ export class SegmentDetector {
   }
   private segment(run: Run): Segment {
     return {
+      ...(run.mark.kind && { kind: run.mark.kind }),
       rarity: run.mark.rarity,
       start: run.start,
       end: run.end,
@@ -308,5 +416,25 @@ export class SegmentDetector {
     this.run = undefined;
     this.pending = undefined;
     return last ? this.segment(last) : undefined;
+  }
+}
+
+/** Keep an inventory selection through short visits to another tab. Each
+ * category still has its own timeline and cannot absorb another panel. */
+export class InventorySegmentDetector {
+  private readonly artifacts = new SegmentDetector();
+  private readonly weapons = new SegmentDetector();
+
+  push(time: number, mark: Mark | undefined): Segment[] {
+    return [
+      this.artifacts.push(time, mark?.kind === "weapon" ? undefined : mark),
+      this.weapons.push(time, mark?.kind === "weapon" ? mark : undefined),
+    ].filter((segment): segment is Segment => segment !== undefined);
+  }
+
+  flush(): Segment[] {
+    return [this.artifacts.flush(), this.weapons.flush()].filter(
+      (segment): segment is Segment => segment !== undefined,
+    );
   }
 }

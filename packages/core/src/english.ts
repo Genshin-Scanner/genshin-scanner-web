@@ -24,7 +24,7 @@ function distance(a: string, b: string) {
   }
   return prev[b.length];
 }
-function lookup<K extends string>(
+export function lookup<K extends string>(
   raw: string,
   entries: readonly K[],
   label: (key: K) => string = (key) => key,
@@ -98,9 +98,7 @@ function ownerName(text: string) {
   return text.normalize("NFKC").toLowerCase().replace(/\s+/gu, "");
 }
 
-export function createEnglishProfile(
-  names: CustomOwnerNames = {},
-): LocaleProfile {
+export function createOwnerResolver(names: CustomOwnerNames = {}) {
   const owners = new Map<string, Set<Owner>>();
 
   function addName(name: string, key: Owner) {
@@ -135,6 +133,13 @@ export function createEnglishProfile(
     return matches.size === 1 ? matches.values().next().value : undefined;
   }
 
+  return resolveOwner;
+}
+
+export function createEnglishProfile(
+  names: CustomOwnerNames = {},
+): LocaleProfile {
+  const resolveOwner = createOwnerResolver(names);
   return {
     language: "eng",
     async readStatLine(line, read) {

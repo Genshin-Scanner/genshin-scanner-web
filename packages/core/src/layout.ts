@@ -42,103 +42,150 @@ function count(
   for (let x = left; x < right; x += step) if (matches(p, x, y, test)) n++;
   return n;
 }
+export function locateInventoryPanel(p: Pixels, weapon = false) {
+  const { width: w, height: h } = p;
+  // Find the uninterrupted bottom stripe of the colored title bar.
+  const left = Math.floor(w * 0.55);
+  let bounds: [number, number] | undefined;
+  let titleY = 0;
+  const weaponTitle: ColorTest = (r, g, b) =>
+    (b > 105 && b > r * 1.28 && g > r * 1.08) ||
+    (g > 90 && g > r * 1.16 && g > b * 1.1) ||
+    (r > 65 && r < 157 && Math.max(r, g, b) - Math.min(r, g, b) < 18);
+  const firstRow = weapon ? w * 0.058 : h * 0.06;
+  const lastRow = weapon ? Math.min(h, w * 0.098) : h * 0.32;
+  for (let y = Math.floor(firstRow); y < lastRow; y += 2) {
+    const runs = bands(
+      left,
+      w,
+      (x) =>
+        matches(p, x, y, purple) ||
+        matches(p, x, y, gold) ||
+        (weapon && matches(p, x, y, weaponTitle)),
+      Math.floor(w * 0.15),
+    );
+    const possible = weapon
+      ? runs.filter(
+          ([x, end]) =>
+            x >= w * 0.58 &&
+            end >= w * 0.87 &&
+            end <= w * 0.96 &&
+            end - x < w * 0.38,
+        )
+      : runs;
+    if (possible.length) {
+      const best = possible.reduce((a, b) =>
+        b[1] - b[0] > a[1] - a[0] ? b : a,
+      );
+      if (!bounds || best[1] - best[0] >= bounds[1] - bounds[0] - 4) {
+        bounds = best;
+        titleY = y;
+      }
+    }
+  }
+  if (!bounds) {
+    // Lower-rarity cards keep the same paper panel and star strip.
+    const lowerTitle: ColorTest = (r, g, b) =>
+      (b > 110 && b > r * 1.35 && g > r * 1.1) ||
+      (g > 100 && g > r * 1.25 && g > b * 1.12) ||
+      (r > 95 && r < 155 && Math.max(r, g, b) - Math.min(r, g, b) < 11);
+    for (let y = Math.floor(h * 0.08); y < h * 0.21; y += 2) {
+      const run = bands(
+        left,
+        w,
+        (x) => matches(p, x, y, lowerTitle),
+        Math.floor(w * 0.16),
+      ).at(-1);
+      if (run && run[1] - run[0] < w * 0.4) {
+        bounds = run;
+        titleY = y;
+      }
+    }
+  }
+  if (!bounds) return;
+  let [x, right] = bounds,
+    width = right - x;
+  const body = bands(
+    titleY + 1,
+    h,
+    (y) => matches(p, right - width * 0.025, y, paper),
+    Math.ceil(h * 0.045),
+  )[0];
+  if (!body) return;
+  const [bodyY, bodyEnd] = body;
+  // Wrapped titles can break the colored stripe into two partial runs.
+  // Recover the full panel width from the blank paper above the level badge.
+  const paperEdge = bands(
+    left,
+    w,
+    (i) => matches(p, i, bodyY + Math.max(1, Math.round(width * 0.02)), paper),
+    Math.floor(w * 0.15),
+  ).find(([a, b]) => a <= x + 3 && Math.abs(b - right) <= width * 0.05);
+  if (paperEdge) {
+    [x, right] = paperEdge;
+    width = right - x;
+  }
+  // A crafted artifact has a purple "Sanctifying Elixir Definition" banner
+  // between its stars and the paper. Header fields stay above that banner.
+  const elixir = bands(
+    Math.max(titleY, bodyY - Math.ceil(width * 0.13)),
+    bodyY,
+    (y) =>
+      matches(
+        p,
+        right - width * 0.035,
+        y,
+        (r, g, b) => b > 220 && b > g + 32 && r > g + 14,
+      ),
+    Math.ceil(width * 0.045),
+  ).at(-1);
+  const headerEnd =
+    elixir && bodyY - elixir[1] < width * 0.018 ? elixir[0] : bodyY;
+  const starRows = bands(
+    titleY,
+    headerEnd,
+    (y) =>
+      count(p, y, x + width * 0.04, x + width * 0.5, stars) > width * 0.045,
+  );
+  if (!starRows.length) return;
+  const starRow = starRows.at(-1)!;
+  const starY = Math.floor((starRow[0] + starRow[1]) / 2);
+  const rarity = bands(
+    x,
+    Math.floor(x + width * 0.5),
+    (i) => matches(p, i, starY, stars),
+    Math.max(2, width * 0.011),
+  ).length;
+  return {
+    x,
+    right,
+    width,
+    titleY,
+    bodyY,
+    bodyEnd,
+    headerEnd,
+    starTop: starRow[0],
+    rarity,
+  };
+}
+
 export const pcLayout: LayoutProfile = {
   ocrWidth: 1920,
   locate(p) {
-    const { width: w, height: h } = p;
-    // Find the uninterrupted bottom stripe of the colored title bar.
-    const left = Math.floor(w * 0.55);
-    let bounds: [number, number] | undefined;
-    let titleY = 0;
-    for (let y = Math.floor(h * 0.06); y < h * 0.32; y += 2) {
-      const runs = bands(
-        left,
-        w,
-        (x) => matches(p, x, y, purple) || matches(p, x, y, gold),
-        Math.floor(w * 0.15),
-      );
-      if (runs.length) {
-        const best = runs.reduce((a, b) => (b[1] - b[0] > a[1] - a[0] ? b : a));
-        if (!bounds || best[1] - best[0] >= bounds[1] - bounds[0] - 4) {
-          bounds = best;
-          titleY = y;
-        }
-      }
-    }
-    if (!bounds) {
-      // Lower-rarity cards keep the same paper panel and star strip.
-      const lowerTitle: ColorTest = (r, g, b) =>
-        (b > 110 && b > r * 1.35 && g > r * 1.1) ||
-        (g > 100 && g > r * 1.25 && g > b * 1.12) ||
-        (r > 95 && r < 155 && Math.max(r, g, b) - Math.min(r, g, b) < 11);
-      for (let y = Math.floor(h * 0.08); y < h * 0.21; y += 2) {
-        const run = bands(
-          left,
-          w,
-          (x) => matches(p, x, y, lowerTitle),
-          Math.floor(w * 0.16),
-        ).at(-1);
-        if (run && run[1] - run[0] < w * 0.4) {
-          bounds = run;
-          titleY = y;
-        }
-      }
-    }
-    if (!bounds) return;
-    let [x, right] = bounds,
-      width = right - x;
-    const body = bands(
-      titleY + 1,
-      h,
-      (y) => matches(p, right - width * 0.025, y, paper),
-      Math.ceil(h * 0.045),
-    )[0];
-    if (!body) return;
-    const [bodyY, bodyEnd] = body;
-    // Wrapped titles can break the colored stripe into two partial runs.
-    // Recover the full panel width from the blank paper above the level badge.
-    const paperEdge = bands(
-      left,
-      w,
-      (i) =>
-        matches(p, i, bodyY + Math.max(1, Math.round(width * 0.02)), paper),
-      Math.floor(w * 0.15),
-    ).find(([a, b]) => a <= x + 3 && Math.abs(b - right) <= width * 0.05);
-    if (paperEdge) {
-      [x, right] = paperEdge;
-      width = right - x;
-    }
-    // A crafted artifact has a purple "Sanctifying Elixir Definition" banner
-    // between its stars and the paper. Header fields stay above that banner.
-    const elixir = bands(
-      Math.max(titleY, bodyY - Math.ceil(width * 0.13)),
-      bodyY,
-      (y) =>
-        matches(
-          p,
-          right - width * 0.035,
-          y,
-          (r, g, b) => b > 220 && b > g + 32 && r > g + 14,
-        ),
-      Math.ceil(width * 0.045),
-    ).at(-1);
-    const headerEnd =
-      elixir && bodyY - elixir[1] < width * 0.018 ? elixir[0] : bodyY;
-    const starRows = bands(
-      titleY,
-      headerEnd,
-      (y) =>
-        count(p, y, x + width * 0.04, x + width * 0.5, stars) > width * 0.045,
-    );
-    if (!starRows.length) return;
-    const starRow = starRows.at(-1)!;
-    const starY = Math.floor((starRow[0] + starRow[1]) / 2);
-    const rarity = bands(
+    const panel = locateInventoryPanel(p);
+    if (!panel) return;
+    const {
       x,
-      Math.floor(x + width * 0.5),
-      (i) => matches(p, i, starY, stars),
-      Math.max(2, width * 0.011),
-    ).length;
+      right,
+      width,
+      titleY,
+      bodyY,
+      bodyEnd,
+      headerEnd,
+      starTop,
+      rarity,
+    } = panel;
+    const h = p.height;
     const setRows = bands(
       bodyY,
       bodyEnd,
@@ -190,7 +237,7 @@ export const pcLayout: LayoutProfile = {
       card: rect(0, titleY, 1, bodyEnd - titleY),
       rarity,
       lock: red > width * 0.025,
-      header: rect(0.045, titleY + 3, 0.53, starRow[0] - titleY - 5),
+      header: rect(0.045, titleY + 3, 0.53, starTop - titleY - 5),
       slotLabel: rect(0.045, headerEnd - 0.45 * width, 0.5, 0.09 * width),
       mainLabel: rect(0.045, headerEnd - 0.28 * width, 0.57, 0.073 * width),
       mainValue: rect(0.045, headerEnd - 0.22 * width, 0.48, 0.12 * width),
