@@ -35,6 +35,24 @@ Edge 158.0.4370.33 processed the full 7 minute 52 second English PC recording. I
 
 An Edge test on a short excerpt edited a weapon's refinement, filled one character form, and exported five weapons, five artifacts, and one character together. Genshin Optimizer 10.40.0 accepted a separate synthetic mixed export and initialized the character whose equipment was included without a character configuration. A pixel regression test checks that two highlighted inventory tiles produce separate selections even when their weapon panels are identical.
 
+### Annotated English mixed recording
+
+The 9 minute 40 second 1920×1200 H.264 recording has a saved raw report and a manually corrected GOOD export. A fresh Edge 158.0.4370.33 scan took 489.9 seconds. The table measures exact item fields against that corrected export. The export contains 18 manually configured characters, which are outside the recognition metric.
+
+<!-- prettier-ignore -->
+| Run and category | Detected | Exact matches | Flagged | Missing / extra relative to export |
+|------------------|---------:|--------------:|--------:|-----------------------------------:|
+| Saved report, artifacts | 366 | 354/366 | 12 | 0 / 0 |
+| Saved report, weapons | 74 | 74/74 | 0 | 0 / 0 |
+| Fresh Edge scan, artifacts | 368 | 250/366 | 11 | 2 / 4 |
+| Fresh Edge scan, weapons | 74 | 73/74 | 0 | 0 / 0 |
+
+For 102 mismatched artifact cards in the fresh scan, all fields matched an adjacent entry in the reference. A local Edge probe showed that drawing immediately after `seeked` could return the previously displayed panel. At 1:50 the immediate draw showed a weapon, and a draw 100 ms later showed the expected artifact. The fresh scan also returned the preceding weapon at 1:11 without a review flag.
+
+The corrected export covers only 4★ and 5★ weapons. A manual check of the recording confirmed 13 additional 3★ weapon cards between 1:31 and 1:48. Both scans omitted them. At three sampled times in this section, the Edge probe identified the active weapon tab and still failed to locate the visible blue weapon panel after the correct frame was drawn.
+
+The saved artifact report's 12 mismatches included five Wanderer owner readings, four extra stat placeholders on Instructor cards, two missing levels, and one wrapped unactivated stat. The English OCR read the Greek sigma in the Wanderer's name as `Z` even with the exact name supplied in a frame check. In two level cases OCR read `+0` correctly, then validation rejected the level after the main HP value of `717` was read as `7`.
+
 ### Raw recognition results
 
 Edge 158.0.4370.33 produced the following results before any UI corrections, with the recorded Traveler name supplied. Each exact match includes equipped owner, lock state, active and unactivated substats. The per-recording references account for two differences verified on the source frames. [Reference details](recognition.md#november-2026-private-references)
