@@ -59,5 +59,11 @@
   "seek": "The browser could not seek in this recording. Try a finalized copy with a duration and seek index.",
   "container": "The recording could not be repackaged. Check that the file is complete.",
   "codec": "The video codec or its configuration cannot be repackaged. Try H.264 MP4.",
-  "preparing": "Preparing a seekable video on this device"
+  "preparing": "Preparing a seekable video on this device",
+  "customNames": "Custom character names",
+  "customNamesHint": "Enter the names shown on equipped artifacts. Saved on this device for your next scan.",
+  "Traveler": "Traveler",
+  "Wanderer": "Wanderer",
+  "Manekin": "Manekin",
+  "manekinOwner": "Equipped by the Manekin. GOOD has no owner key for the Manekin. Choose Unequipped to export without an owner, or exclude this card."
 }

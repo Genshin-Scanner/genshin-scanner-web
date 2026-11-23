@@ -6,7 +6,11 @@ interface NumberFieldProps extends ComponentProps<"input"> {
   issue?: string;
 }
 
-export function NumberField({ label, issue, ...input }: Readonly<NumberFieldProps>) {
+export function NumberField({
+  label,
+  issue,
+  ...input
+}: Readonly<NumberFieldProps>) {
   const hintId = useId();
 
   return (

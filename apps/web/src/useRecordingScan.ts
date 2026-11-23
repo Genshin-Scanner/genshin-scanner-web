@@ -1,3 +1,9 @@
+import {
+  createEnglishProfile,
+  markFrame,
+  pcLayout,
+  type CustomOwnerNames,
+} from "@scanner/core";
 import { useRef, useState } from "react";
 import { ScanError, scanVideo, type ScanProgress } from "@scanner/browser";
 import type { Row } from "./review";
@@ -13,7 +19,7 @@ export type ScanStatus =
 
 const assetBase = new URL(import.meta.env.BASE_URL + "ocr/", document.baseURI);
 
-export function useRecordingScan() {
+export function useRecordingScan(names: CustomOwnerNames) {
   const active = useRef<AbortController | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [selected, select] = useState(0);
@@ -42,6 +48,11 @@ export function useRecordingScan() {
         (item) => {
           count++;
           setRows((old) => [...old, { ...item, excluded: false }]);
+        },
+        {
+          locale: createEnglishProfile(names),
+          layout: pcLayout,
+          mark: markFrame,
         },
       );
       setSkipped(unsupported);

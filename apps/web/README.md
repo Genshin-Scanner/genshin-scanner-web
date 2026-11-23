@@ -28,3 +28,9 @@ To exercise the built UI against the private reference recording, use the [root 
 The UI remembers the selected language (English or Russian). Changing it during review preserves the selected artifact, edits, and GOOD keys. The recording must show the English PC inventory.
 
 The display catalogs in [src/locales](src/locales) use artifact set, stat, and character names from Optimizer’s pinned game data. Percentage-based stats carry an explicit percent sign to distinguish them from flat stats. When updating the GOOD keys, refresh both catalogs and run the label coverage tests. [Pinned English and Russian sources](https://github.com/frzyc/genshin-optimizer/tree/f24bcb82f650ff755af9ed47956a91809f142772/libs/gi/dm-localization/assets/locales) · [Upstream license](../../packages/good/src/upstream/LICENSE)
+
+## Custom character names and scan reports
+
+Enter names under **Custom character names** before starting a scan. The app remembers them in local storage. A recognized Manekin owner requires review because the pinned GOOD revision cannot represent it. Choose **Unequipped** or exclude the card before export.
+
+Once scanning finishes, run `downloadScanReport()` in the browser console to save the original readings, validation issues, and timestamps for all selections, including cards you have since edited or excluded. The report omits thumbnails, video, and the custom-name settings. Use **Export GOOD** for importing reviewed artifacts into Optimizer.

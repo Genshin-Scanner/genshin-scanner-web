@@ -30,6 +30,8 @@ export function Editor({
   const issues = artifactIssuePaths(a);
 
   function fieldIssue(key: keyof Artifact) {
+    if (key === "location" && a.location === undefined && row.unsupportedOwner)
+      return t("manekinOwner");
     if (a[key] === undefined) return t("missing");
     if (issues.includes(key)) return t("invalid");
   }

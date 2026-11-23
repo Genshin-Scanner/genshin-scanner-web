@@ -5,10 +5,37 @@ import {
 } from "@scanner/good";
 import type { ScanItem } from "@scanner/browser";
 
-export type Row = ScanItem & { excluded: boolean };
+type Reading = Pick<ScanItem, "draft" | "issues" | "unsupportedOwner">;
+
+export type Row = ScanItem & { excluded: boolean; original?: Reading };
+
+function reading(row: Row): Reading {
+  return {
+    draft: row.draft,
+    issues: row.issues,
+    unsupportedOwner: row.unsupportedOwner,
+  };
+}
+
+export function scanReport(rows: Row[]) {
+  return {
+    format: "genshin-scanner-review",
+    version: 1,
+    items: rows.map((row, index) => ({
+      number: index + 1,
+      time: row.time,
+      ...(row.original ?? reading(row)),
+    })),
+  };
+}
 
 export function edited(row: Row, draft: ArtifactDraft): Row {
-  return { ...row, draft, issues: validateArtifact(draft) };
+  return {
+    ...row,
+    original: row.original ?? reading(row),
+    draft,
+    issues: validateArtifact(draft),
+  };
 }
 
 export function downloadData(rows: Row[]) {

@@ -46,11 +46,22 @@ try {
     console.log(
       engine,
       browser.version(),
-      process.argv[3] ?? "test-assets/count-33.mp4",
+      process.argv[3] ?? "test-assets/33-1/video.mp4",
+    );
+    const customNames = page
+      .locator("details")
+      .filter({ hasText: "Custom character names" });
+    await customNames.locator("summary").click();
+    await customNames.getByLabel("Wanderer").fill("Demo Wanderer");
+    await page.reload();
+    await customNames.locator("summary").click();
+    assert.equal(
+      await customNames.getByLabel("Wanderer").inputValue(),
+      "Demo Wanderer",
     );
     const started = Date.now();
     const input = page.locator("input[type=file]");
-    await input.setInputFiles(process.argv[3] ?? "test-assets/count-33.mp4");
+    await input.setInputFiles(process.argv[3] ?? "test-assets/33-1/video.mp4");
     await page.getByRole("button", { name: "Cancel scan" }).click();
     await page
       .getByText("Scan cancelled", { exact: true })
@@ -67,11 +78,11 @@ try {
     const expectRemux = process.argv.includes("--expect-remux");
     await Promise.all([
       expectRemux && page.locator("progress:not([value])").waitFor(),
-      input.setInputFiles(process.argv[3] ?? "test-assets/count-33.mp4"),
+      input.setInputFiles(process.argv[3] ?? "test-assets/33-1/video.mp4"),
     ]);
     await page.waitForFunction(
       () => {
-        const s = document.querySelector("[role=status]")?.textContent;
+        const s = document.querySelector("output")?.textContent;
         return s && !document.querySelector("progress");
       },
       undefined,
@@ -93,11 +104,20 @@ try {
       process.argv[4] === "--expect-remux" ? 1 : (process.argv[4] ?? 1),
     );
     assert.ok(Number.isInteger(repeats) && repeats > 0);
-    assert.equal(count, 33 * repeats);
     const singlePass: import("../packages/good/src").Artifact[] = JSON.parse(
-      await readFile("test-assets/expected-private.json", "utf8"),
-    );
+      await readFile("test-assets/33-1/expected.json", "utf8"),
+    ).artifacts;
     const expected = Array.from({ length: repeats }, () => singlePass).flat();
+    assert.equal(count, expected.length);
+    const reportDownload = page.waitForEvent("download");
+    await page.evaluate(() => window.downloadScanReport!());
+    const reportFile = await reportDownload;
+    assert.equal(reportFile.suggestedFilename(), "genshin-scan-report.json");
+    const report = JSON.parse(
+      await readFile((await reportFile.path())!, "utf8"),
+    );
+    assert.equal(report.items.length, count);
+    assert.equal(report.format, "genshin-scanner-review");
     await tiles.first().click();
     const flaggedTile = page.locator('nav [data-review="true"]').first();
     if (await flaggedTile.count()) {

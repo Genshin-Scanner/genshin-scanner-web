@@ -1,19 +1,37 @@
+import { useEffect, useState } from "react";
+import { CustomOwners } from "./components/CustomOwners";
+import { loadCustomOwners, saveCustomOwners } from "./customOwners";
 import { useTranslation } from "react-i18next";
 import { AppHeader } from "./components/AppHeader";
 import { RecordingPicker } from "./components/RecordingPicker";
 import { ReviewSummary } from "./components/ReviewSummary";
 import { ArtifactList } from "./components/ArtifactList";
 import { Editor } from "./Editor";
-import { downloadArtifacts } from "./download";
+import { downloadArtifacts, downloadScanReport } from "./download";
 import { edited } from "./review";
 import { useRecordingScan } from "./useRecordingScan";
+
+declare global {
+  interface Window {
+    downloadScanReport?: () => void;
+  }
+}
 
 export function App() {
   const { t } = useTranslation();
 
+  const [names, setNames] = useState(loadCustomOwners);
   const { rows, selected, select, changeSelected, skipped, ...scan } =
-    useRecordingScan();
+    useRecordingScan(names);
   const row = rows[selected];
+
+  useEffect(() => {
+    if (!rows.length || scan.progress) return;
+    window.downloadScanReport = () => downloadScanReport(rows);
+    return () => {
+      delete window.downloadScanReport;
+    };
+  }, [rows, scan.progress]);
 
   return (
     <>
@@ -25,6 +43,14 @@ export function App() {
         <p className="mt-4 mb-8 max-w-2xl text-lg text-stone-600">
           {t("intro")}
         </p>
+        <CustomOwners
+          names={names}
+          disabled={!!scan.progress}
+          onChange={(next) => {
+            setNames(next);
+            saveCustomOwners(next);
+          }}
+        />
         <RecordingPicker skipped={skipped} {...scan} />
         {row && (
           <>
