@@ -1,2 +1,13 @@
 @import "tailwindcss" source("./");
 @source "../index.html";
+
+@supports (position-area: block-end) {
+  @media (min-width: 40rem) {
+    .good-import-help {
+      position-area: block-end span-inline-start;
+      position-try-fallbacks: flip-block, flip-inline;
+      inset: auto;
+      margin: 0.5rem 0;
+    }
+  }
+}

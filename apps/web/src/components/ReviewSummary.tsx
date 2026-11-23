@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { Row } from "../review";
+import { GoodImportHelp } from "./GoodImportHelp";
 
 interface ReviewSummaryProps {
   rows: Row[];
@@ -32,13 +33,16 @@ export function ReviewSummary({
           })}
         </p>
       </div>
-      <button
-        className="cursor-pointer rounded-md bg-emerald-900 px-5 py-3 font-medium text-white hover:bg-emerald-800 disabled:cursor-default disabled:opacity-45"
-        disabled={!complete || !!flagged.length || !included.length}
-        onClick={save}
-      >
-        {t("export")}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          className="cursor-pointer rounded-md bg-emerald-900 px-5 py-3 font-medium text-white hover:bg-emerald-800 disabled:cursor-default disabled:opacity-45"
+          disabled={!complete || !!flagged.length || !included.length}
+          onClick={save}
+        >
+          {t("export")}
+        </button>
+        <GoodImportHelp />
+      </div>
     </div>
   );
 }

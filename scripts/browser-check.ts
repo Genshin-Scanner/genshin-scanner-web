@@ -35,6 +35,28 @@ try {
       throw new Error("Unexpected network request: " + url.origin);
     });
     await page.goto(base);
+    const favicon = await page
+      .locator('link[rel="icon"][type="image/svg+xml"]')
+      .getAttribute("href");
+    assert.ok(favicon);
+    const iconUrl = new URL(favicon, base);
+    assert.equal(iconUrl.pathname, "/scanner/icon.svg");
+    const headerIcon = await page
+      .locator("header img")
+      .evaluate(async (img: HTMLImageElement) => {
+        await img.decode();
+        return img.currentSrc;
+      });
+    assert.equal(headerIcon, iconUrl.href);
+    const header = page.getByRole("banner");
+    for (const [name, href] of [
+      ["Genshin Impact", "https://genshin.hoyoverse.com/en/"],
+      ["Genshin Optimizer", "https://frzyc.github.io/genshin-optimizer/"],
+    ]) {
+      const link = header.getByRole("link", { name, exact: true });
+      assert.equal(await link.getAttribute("href"), href);
+      assert.equal(await link.getAttribute("target"), "_blank");
+    }
     const footer = page.getByRole("contentinfo");
     assert.ok(
       (await footer.innerText()).includes(
@@ -115,6 +137,44 @@ try {
     );
     const status = await page.getByRole("status").textContent();
     assert.equal(status, "Scan complete");
+    const help = page.getByRole("button", {
+      name: "How do I use the GOOD file?",
+    });
+    const importHint = page.getByText(
+      "Import the GOOD file into Genshin Optimizer.",
+      {
+        exact: false,
+      },
+    );
+    await importHint.waitFor({ state: "hidden" });
+    await help.press("Enter");
+    await importHint.waitFor({ state: "visible" });
+    assert.equal(
+      await page
+        .getByRole("link", { name: "Open Genshin Optimizer" })
+        .getAttribute("href"),
+      "https://frzyc.github.io/genshin-optimizer/",
+    );
+    await help.press("Escape");
+    await importHint.waitFor({ state: "hidden" });
+    const originalViewport = page.viewportSize()!;
+    await page.setViewportSize({ width: 320, height: 700 });
+    await language.selectOption("ru");
+    const russianHelp = page.getByRole("button", {
+      name: "Как использовать файл GOOD?",
+    });
+    await russianHelp.click();
+    const panelBounds = await page
+      .locator("[popover]:popover-open")
+      .boundingBox();
+    assert.ok(
+      panelBounds &&
+        panelBounds.x >= 0 &&
+        panelBounds.x + panelBounds.width <= 320,
+    );
+    await page.keyboard.press("Escape");
+    await page.getByLabel("Язык интерфейса").selectOption("en");
+    await page.setViewportSize(originalViewport);
     const tiles = page.locator("nav button[data-order]");
     const count = await tiles.count();
     console.log(

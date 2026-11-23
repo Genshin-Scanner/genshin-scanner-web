@@ -8,7 +8,7 @@ Custom character names are optional, saved on the device, and applied to the nex
 
 ## Running the site
 
-The site footer credits the project contributors and links to the source repository and the MIT license served with the build.
+The header and browser tab share the scanner icon. The header links to the official game site and Genshin Optimizer. The help button next to GOOD export explains how to import the file in Optimizer. The footer credits the project contributors and links to the source repository and the MIT license served with the build.
 
 From the repository root, run `bun install --frozen-lockfile`, then `bun run dev`. Vite prints the local URL. Run `bun run build` to generate the static site in `apps/web/dist/`. A GitHub Pages deployment is pending.
 

@@ -1,6 +1,7 @@
 {
   "appName": "Сканер инвентаря",
   "language": "Язык интерфейса",
+  "externalLinks": "Ссылки по Genshin Impact",
   "license": "Лицензия MIT",
   "title": "Сканирование артефактов",
   "intro": "Выберите запись инвентаря, проверьте артефакты и экспортируйте их в Genshin Optimizer.",
@@ -25,6 +26,9 @@
   "list": "Найденные артефакты",
   "counts": "К экспорту: {{included}} · На проверку: {{flagged}} · Исключено: {{excluded}} · Не поддерживается: {{skipped}}",
   "export": "Скачать GOOD",
+  "goodHelpLabel": "Как использовать файл GOOD?",
+  "goodHelpText": "Импортируйте файл GOOD в Genshin Optimizer. Откройте Settings → Current Database → Upload и выберите скачанный файл JSON.",
+  "openOptimizer": "Открыть Genshin Optimizer",
   "unidentified": "Неизвестный артефакт",
   "timestamp": "{{time}} с",
   "excluded": "Исключён",

@@ -1,6 +1,7 @@
 {
   "appName": "Inventory Scanner",
   "language": "Interface language",
+  "externalLinks": "Genshin resources",
   "license": "MIT License",
   "title": "Scan your artifacts",
   "intro": "Choose a recording of your inventory to review its artifacts and export them to Genshin Optimizer.",
@@ -25,6 +26,9 @@
   "list": "Scanned artifacts",
   "counts": "{{included}} included · {{flagged}} to review · {{excluded}} excluded · {{skipped}} unsupported",
   "export": "Export GOOD",
+  "goodHelpLabel": "How do I use the GOOD file?",
+  "goodHelpText": "Import the GOOD file into Genshin Optimizer. Go to Settings → Current Database → Upload and select the downloaded JSON file.",
+  "openOptimizer": "Open Genshin Optimizer",
   "unidentified": "Unidentified artifact",
   "timestamp": "{{time}} s",
   "excluded": "Excluded",
