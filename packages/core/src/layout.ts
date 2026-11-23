@@ -30,6 +30,12 @@ const paper: ColorTest = (r, g, b) =>
   Math.abs(r - 234) < 13 && Math.abs(g - 227) < 13 && Math.abs(b - 216) < 13;
 const green: ColorTest = (r, g, b) => g > 100 && g > r * 1.16 && g > b * 1.17;
 const stars: ColorTest = (r, g, b) => r > 220 && g > 160 && g < 235 && b < 125;
+const weaponTitle: ColorTest = (r, g, b) =>
+  purple(r, g, b) ||
+  gold(r, g, b) ||
+  (b > 105 && b > r * 1.28 && g > r * 1.08) ||
+  (g > 90 && g > r * 1.16 && g > b * 1.1) ||
+  (r > 65 && r < 157 && Math.max(r, g, b) - Math.min(r, g, b) < 18);
 function count(
   p: Pixels,
   y: number,
@@ -42,16 +48,12 @@ function count(
   for (let x = left; x < right; x += step) if (matches(p, x, y, test)) n++;
   return n;
 }
-export function locateInventoryPanel(p: Pixels, weapon = false) {
+function locatePanelFromTitle(p: Pixels, weapon: boolean) {
   const { width: w, height: h } = p;
   // Find the uninterrupted bottom stripe of the colored title bar.
   const left = Math.floor(w * 0.55);
   let bounds: [number, number] | undefined;
   let titleY = 0;
-  const weaponTitle: ColorTest = (r, g, b) =>
-    (b > 105 && b > r * 1.28 && g > r * 1.08) ||
-    (g > 90 && g > r * 1.16 && g > b * 1.1) ||
-    (r > 65 && r < 157 && Math.max(r, g, b) - Math.min(r, g, b) < 18);
   const firstRow = weapon ? w * 0.058 : h * 0.06;
   const lastRow = weapon ? Math.min(h, w * 0.098) : h * 0.32;
   for (let y = Math.floor(firstRow); y < lastRow; y += 2) {
@@ -59,9 +61,9 @@ export function locateInventoryPanel(p: Pixels, weapon = false) {
       left,
       w,
       (x) =>
-        matches(p, x, y, purple) ||
-        matches(p, x, y, gold) ||
-        (weapon && matches(p, x, y, weaponTitle)),
+        weapon
+          ? matches(p, x, y, weaponTitle)
+          : matches(p, x, y, purple) || matches(p, x, y, gold),
       Math.floor(w * 0.15),
     );
     const possible = weapon
@@ -102,7 +104,47 @@ export function locateInventoryPanel(p: Pixels, weapon = false) {
       }
     }
   }
-  if (!bounds) return;
+  if (bounds) return completeInventoryPanel(p, weapon, bounds, titleY);
+}
+
+function locateWeaponFromPaper(p: Pixels) {
+  const { width: w, height: h } = p;
+  // The blue 3★ title can merge with the scene beside the card. The paper
+  // under the stars still has both edges and fixes the header's position.
+  const left = Math.floor(w * 0.55);
+  for (let y = Math.floor(w * 0.17); y < Math.min(h, w * 0.3); y += 2) {
+    const bounds = bands(
+      left,
+      w,
+      (x) => matches(p, x, y, paper),
+      Math.floor(w * 0.19),
+    ).find(
+      ([x, right]) =>
+        x >= w * 0.58 &&
+        right >= w * 0.87 &&
+        right <= w * 0.96 &&
+        right - x < w * 0.38,
+    );
+    if (!bounds) continue;
+    const [x, right] = bounds;
+    const width = right - x;
+    const titleY = Math.round(y - width * 0.575);
+    if (titleY < w * 0.045 || titleY > w * 0.105) continue;
+    if (count(p, titleY + width * 0.1, x, right, weaponTitle) < width * 0.25)
+      continue;
+    const panel = completeInventoryPanel(p, true, bounds, titleY);
+    if (panel?.rarity === 3) return panel;
+  }
+}
+
+function completeInventoryPanel(
+  p: Pixels,
+  weapon: boolean,
+  bounds: [number, number],
+  titleY: number,
+) {
+  const { width: w, height: h } = p;
+  const left = Math.floor(w * 0.55);
   let [x, right] = bounds,
     width = right - x;
   const body = bands(
@@ -168,6 +210,11 @@ export function locateInventoryPanel(p: Pixels, weapon = false) {
     starTop: starRow[0],
     rarity,
   };
+}
+
+export function locateInventoryPanel(p: Pixels, weapon = false) {
+  const panel = locatePanelFromTitle(p, weapon);
+  return weapon && !panel?.rarity ? locateWeaponFromPaper(p) : panel;
 }
 
 export const pcLayout: LayoutProfile = {

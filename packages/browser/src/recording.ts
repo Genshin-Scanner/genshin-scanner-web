@@ -55,6 +55,51 @@ function videoEvent(
   });
 }
 
+export async function seekVideo(
+  video: HTMLVideoElement,
+  time: number,
+  signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  if (Math.abs(time - video.currentTime) <= 0.0001) return;
+
+  let callback: number | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let presented: Promise<void> | undefined;
+  try {
+    await videoEvent(video, "seeked", signal, () => {
+      if (typeof video.requestVideoFrameCallback === "function") {
+        presented = new Promise<void>((resolve) => {
+          const onFrame: VideoFrameRequestCallback = (_, { mediaTime }) => {
+            if (Math.abs(mediaTime - time) <= 0.08) resolve();
+            else callback = video.requestVideoFrameCallback(onFrame);
+          };
+          callback = video.requestVideoFrameCallback(onFrame);
+        });
+      }
+      video.currentTime = time;
+    });
+    if (Math.abs(video.currentTime - time) > 0.1)
+      throw new ScanError(
+        "seek",
+        "The player could not seek to the requested frame.",
+      );
+
+    // A paused seek can reuse a frame without presenting it again. Allow the
+    // video surface to update even when no presentation callback is delivered.
+    const fallback = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, 100);
+    });
+    await abortable(
+      presented ? Promise.race([presented, fallback]) : fallback,
+      signal,
+    );
+  } finally {
+    clearTimeout(timer);
+    if (callback !== undefined) video.cancelVideoFrameCallback(callback);
+  }
+}
+
 export async function openRecording(
   file: File,
   signal: AbortSignal,
@@ -73,17 +118,8 @@ export async function openRecording(
     url = undefined;
   }
 
-  async function seek(time: number) {
-    signal.throwIfAborted();
-    if (Math.abs(time - video.currentTime) <= 0.0001) return;
-    await videoEvent(video, "seeked", signal, () => {
-      video.currentTime = time;
-    });
-    if (Math.abs(video.currentTime - time) > 0.1)
-      throw new ScanError(
-        "seek",
-        "The player could not seek to the requested frame.",
-      );
+  function seek(time: number) {
+    return seekVideo(video, time, signal);
   }
 
   async function load(blob: Blob) {

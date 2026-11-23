@@ -353,6 +353,19 @@ test("a bright edge without an opposing highlight cannot cause a weapon selectio
   expect(frame?.selection).toBeUndefined();
 });
 
+test("uses the paper to find a three-star weapon against a blue background", () => {
+  const blue = [75, 117, 163];
+  const image = weaponFrame(3, blue);
+  for (let y = 49; y < 150; y++)
+    for (let x = 900; x < 960; x++)
+      image.data.set([...blue, 255], (y * 960 + x) * 4);
+
+  expect(markInventoryFrame(image)).toMatchObject({
+    kind: "weapon",
+    rarity: 3,
+  });
+});
+
 test("low-rarity weapon panels yield a rarity marker for the skip counter", () => {
   for (const [rarity, title] of [
     [1, [130, 133, 139]],
