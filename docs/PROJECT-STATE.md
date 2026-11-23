@@ -37,21 +37,25 @@ An Edge test on a short excerpt edited a weapon's refinement, filled one charact
 
 ### Annotated English mixed recording
 
-The 9 minute 40 second 1920×1200 H.264 recording has a saved raw report and a manually corrected GOOD export. A fresh Edge 158.0.4370.33 scan took 489.9 seconds. The table measures exact item fields against that corrected export. The export contains 18 manually configured characters, which are outside the recognition metric.
+The 9 minute 40 second 1920×1200 H.264 recording has a saved raw report and a manually corrected GOOD export. The exported character settings were filled in manually. Item accuracy compares all GOOD fields in selection order. The original weapon reference covers 4★ and 5★ items. The expanded reference also contains 13 3★ items manually verified between 1:31 and 1:48.
 
 <!-- prettier-ignore -->
 | Run and category | Detected | Exact matches | Flagged | Missing / extra relative to export |
 |------------------|---------:|--------------:|--------:|-----------------------------------:|
 | Saved report, artifacts | 366 | 354/366 | 12 | 0 / 0 |
 | Saved report, weapons | 74 | 74/74 | 0 | 0 / 0 |
-| Fresh Edge scan, artifacts | 368 | 250/366 | 11 | 2 / 4 |
-| Fresh Edge scan, weapons | 74 | 73/74 | 0 | 0 / 0 |
+| Edge before fixes, artifacts | 368 | 250/366 | 11 | 2 / 4 |
+| Edge before fixes, weapons | 74 | 73/74 | 0 | 0 / 0 |
+| Edge after fixes, artifacts | 366 | 366/366 | 0 | 0 / 0 |
+| Edge after fixes, weapons with expanded reference | 87 | 87/87 | 0 | 0 / 0 |
 
-For 102 mismatched artifact cards in the fresh scan, all fields matched an adjacent entry in the reference. A local Edge probe showed that drawing immediately after `seeked` could return the previously displayed panel. At 1:50 the immediate draw showed a weapon, and a draw 100 ms later showed the expected artifact. The fresh scan also returned the preceding weapon at 1:11 without a review flag.
+For 102 mismatched artifact cards before the fixes, all fields matched an adjacent entry in the reference. A local Edge probe at 1:50 showed a weapon immediately after `seeked` and the expected artifact once the target frame was presented. The scan also returned the preceding weapon at 1:11 without a review flag. The browser now waits for a frame near the target timestamp before sampling it.
 
-The corrected export covers only 4★ and 5★ weapons. A manual check of the recording confirmed 13 additional 3★ weapon cards between 1:31 and 1:48. Both scans omitted them. At three sampled times in this section, the Edge probe identified the active weapon tab and still failed to locate the visible blue weapon panel after the correct frame was drawn.
+The saved report and the original Edge scan omitted all 13 of the 3★ weapons. The detector now uses the paper portion of the panel as a fallback when the blue title blends into the scene.
 
-The saved artifact report's 12 mismatches included five Wanderer owner readings, four extra stat placeholders on Instructor cards, two missing levels, and one wrapped unactivated stat. The English OCR read the Greek sigma in the Wanderer's name as `Z` even with the exact name supplied in a frame check. In two level cases OCR read `+0` correctly, then validation rejected the level after the main HP value of `717` was read as `7`.
+All 12 original artifact mismatches also pass a direct frame check. The English profile accounts for OCR reading Greek sigma as `Z` in a configured character name. It ignores short strokes from the set heading, keeps a wrapped unactivated stat together, and can recover `717` from isolated main HP digits before checking the value against level `+0`.
+
+The OBS regression check exposed two main-stat labels with stray characters. The separate label crop now ends before the artifact artwork, which had added a character to `HP` and `ATK`. The full OBS recheck matched all 121 selections with no review flags.
 
 ### Raw recognition results
 
