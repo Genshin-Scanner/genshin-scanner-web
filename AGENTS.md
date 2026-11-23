@@ -16,7 +16,9 @@ Communicate with the user in Russian. Read the [project status](docs/PROJECT-STA
 - Check recognition against the three reference frames. Check detector changes against the local 33-item recording. Use the v1 acceptance criteria for expected results. Tests required in a clean clone must use synthetic or anonymized fixtures.
 - Run tests and Prettier before each commit. For code changes, also run applicable type, build, and integration checks. Use the Bun project scripts and rerun checks after fixes. Where package scripts are unavailable, use `bun test` and `bunx prettier@3.6.2 --check` with an explicit list of changed files that Prettier supports.
 - Inspect the staged changes with `git diff --cached --check` and the file list with `git diff --cached --name-only`. Fix issues before committing. Report an empty test suite or any check that requires a separate environment.
-- Make small, verifiable commits and sign them with the SSH key configured for this repository (`id_ed25519_codex`). Checks may be delegated to a GPT-6.1 Sol subagent. The commit author remains responsible for the results.
+- Make small, verifiable commits and sign them with the SSH key configured for this repository (`id_ed25519_codex`). The commit author remains responsible for the results.
+
+- Never launch Astra subagents. Ask for explicit permission before launching or resuming a Sol or Terra subagent. Prefer defining a repository-local skill for a delegated task before assigning it.
 
 ## Documentation
 
