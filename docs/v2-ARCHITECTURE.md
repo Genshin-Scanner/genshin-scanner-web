@@ -4,7 +4,7 @@ A scan accepts one English PC inventory recording of 3–5★ weapons and 4–5�
 
 ## Frame detection
 
-`markInventoryFrame` uses the gold underline in the inventory tab bar to identify the active category. It compares consecutive card fingerprints and keeps a category on each settled segment. Weapon fingerprints include the card title, artwork, level, refinement, lock, and equipped banner. Weapon selection also tracks the focused tile by column and vertical center. A stable move between tiles creates separate selections even when the right-hand cards match. When the grid scrolls, the detector reanchors its selection before comparing tile positions again.
+`markInventoryFrame` uses the gold underline in the inventory tab bar to identify the active category. It compares consecutive card fingerprints and keeps a category on each settled segment. Weapon fingerprints include the card title, artwork, level, refinement, lock, and equipped banner. The detector uses the glow on both sides of the focused tile to track its column and vertical center. A stable move between tiles creates separate selections even when the right-hand cards match. When the grid scrolls, the detector reanchors its selection before comparing tile positions again.
 
 The browser adapter uses one media element and one OCR worker for the recording. It samples the timeline once at low resolution, then revisits the chosen frames at OCR resolution. The core uses shared panel anchors and separate field layouts for the two categories. The selected weapon's level cap determines ascension. The OCR readings are checked against the pinned GOOD keys, weapon rarity and type, and Optimizer's level boundaries. The selection logic can only distinguish copies whose selections are visible in the recording.
 

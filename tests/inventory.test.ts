@@ -294,32 +294,73 @@ test("switching briefly to weapons and back retains the same displayed artifact 
   expect(result.map((segment) => segment.kind)).toEqual(["artifact", "weapon"]);
 });
 
+function weaponFrame(
+  rarity: number,
+  title: readonly number[],
+  selectedX?: number,
+) {
+  const image: Pixels = {
+    width: 960,
+    height: 600,
+    data: new Uint8Array(960 * 600 * 4),
+  };
+  function fill(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: readonly number[],
+  ) {
+    for (let dy = 0; dy < height; dy++)
+      for (let dx = 0; dx < width; dx++)
+        image.data.set([...color, 255], ((y + dy) * 960 + x + dx) * 4);
+  }
+  fill(267, 46, 42, 2, [212, 187, 138]);
+  fill(654, 60, 246, 28, title);
+  fill(654, 202, 246, 260, [234, 227, 216]);
+  for (let i = 0; i < rarity; i++)
+    fill(669 + i * 17, 185, 13, 7, [246, 208, 70]);
+  fill(196, 160, 1, 88, [130, 130, 130]);
+  fill(198, 160, 1, 88, [197, 197, 203]);
+  if (selectedX !== undefined) {
+    fill(selectedX - 2, 72, 1, 66, [130, 130, 130]);
+    fill(selectedX, 72, 1, 66, [255, 255, 255]);
+    fill(selectedX + 65, 72, 1, 66, [255, 255, 255]);
+  }
+  return image;
+}
+
+test("identical unequipped weapon panels produce a selection per highlighted tile", () => {
+  const first = markInventoryFrame(weaponFrame(3, [75, 117, 163], 57));
+  const second = markInventoryFrame(weaponFrame(3, [75, 117, 163], 130));
+  expect(first?.selection?.column).toBe(0);
+  expect(second?.selection?.column).toBe(1);
+  expect(first?.values).toEqual(second?.values);
+
+  const detector = new InventorySegmentDetector();
+  const selections = [first, first, second, second]
+    .flatMap((frame, i) => detector.push(i / 10, frame))
+    .concat(detector.flush());
+  expect(selections.map(({ kind, start }) => [kind, start])).toEqual([
+    ["weapon", 0],
+    ["weapon", 0.2],
+  ]);
+});
+
+test("a bright edge without an opposing highlight cannot cause a weapon selection", () => {
+  const frame = markInventoryFrame(weaponFrame(3, [75, 117, 163]));
+  expect(frame?.kind).toBe("weapon");
+  expect(frame?.selection).toBeUndefined();
+});
+
 test("low-rarity weapon panels yield a rarity marker for the skip counter", () => {
   for (const [rarity, title] of [
     [1, [130, 133, 139]],
     [2, [53, 124, 89]],
   ] as const) {
-    const image: Pixels = {
-      width: 960,
-      height: 600,
-      data: new Uint8Array(960 * 600 * 4),
-    };
-    function fill(
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-      color: readonly number[],
-    ) {
-      for (let dy = 0; dy < height; dy++)
-        for (let dx = 0; dx < width; dx++)
-          image.data.set([...color, 255], ((y + dy) * 960 + x + dx) * 4);
-    }
-    fill(267, 46, 42, 2, [212, 187, 138]);
-    fill(654, 60, 246, 28, title);
-    fill(654, 202, 246, 260, [234, 227, 216]);
-    for (let i = 0; i < rarity; i++)
-      fill(669 + i * 17, 185, 13, 7, [246, 208, 70]);
-    expect(markInventoryFrame(image)).toMatchObject({ kind: "weapon", rarity });
+    expect(markInventoryFrame(weaponFrame(rarity, title))).toMatchObject({
+      kind: "weapon",
+      rarity,
+    });
   }
 });

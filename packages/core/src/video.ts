@@ -34,12 +34,24 @@ function weaponSelection(p: Pixels, card: Rect): Mark["selection"] {
     let best = { column, center: 0, length: 0 };
     for (let x = Math.round(predicted) - radius; x <= predicted + radius; x++) {
       if (x < width * 0.035 || x >= p.width) continue;
+      const oppositeLeft = Math.round(x + width * 0.255);
+      const oppositeRight = Math.round(x + width * 0.28);
       let run = 0;
       for (let y = Math.round(p.height * 0.088); y < p.height * 0.893; y++) {
         const near = grey(p, Math.round(x - width * 0.009), y);
         const far = grey(p, Math.round(x - width * 0.023), y);
         const bright = grey(p, x, y);
-        run = near > far + 18 && near < 238 && bright > 192 ? run + 1 : 0;
+        // A tile's ordinary left edge can be bright. A selection lights up both sides.
+        let lit = false;
+        if (near > far + 18 && near < 238 && bright > 192) {
+          for (let right = oppositeLeft; right <= oppositeRight; right++) {
+            if (grey(p, right, y) > 235) {
+              lit = true;
+              break;
+            }
+          }
+        }
+        run = lit ? run + 1 : 0;
         if (run > best.length)
           best = { column, center: (y - run / 2) / width, length: run };
       }
