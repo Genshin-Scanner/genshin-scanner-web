@@ -1,20 +1,16 @@
 import {
-  scanVideo,
-  type ScanItem,
+  scanInventoryVideo,
+  type InventoryScanItem,
   type ScanProgress,
 } from "../../packages/browser/src";
-import {
-  createEnglishProfile,
-  pcLayout,
-  markFrame,
-} from "../../packages/core/src";
+import type { CustomOwnerNames } from "../../packages/core/src";
 
-export type RawItem = Pick<ScanItem, "time" | "draft" | "issues">;
+type Reading<T> = T extends InventoryScanItem
+  ? Omit<T, "image" | "detail">
+  : never;
+export type RawItem = Reading<InventoryScanItem>;
 
-export async function scan(
-  file: File,
-  names: Parameters<typeof createEnglishProfile>[0],
-) {
+export async function scan(file: File, names: CustomOwnerNames) {
   const items: RawItem[] = [];
   const milliseconds: Partial<Record<ScanProgress["phase"], number>> = {};
   let phase: ScanProgress["phase"] = "Finding cards";
@@ -26,7 +22,7 @@ export async function scan(
     since = now;
   }
 
-  const skipped = await scanVideo(
+  const skipped = await scanInventoryVideo(
     file,
     new URL("/ocr/", location.href),
     new AbortController().signal,
@@ -36,8 +32,8 @@ export async function scan(
         phase = progress.phase;
       }
     },
-    ({ draft, issues, time }) => items.push({ draft, issues, time }),
-    { locale: createEnglishProfile(names), layout: pcLayout, mark: markFrame },
+    ({ image: _, detail: __, ...item }) => items.push(item),
+    names,
   );
   finishPhase();
   return { items, skipped, milliseconds };

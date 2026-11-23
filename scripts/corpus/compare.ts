@@ -1,15 +1,18 @@
 import { isDeepStrictEqual } from "node:util";
-import type { Artifact, ArtifactDraft } from "../../packages/good/src";
-import type { RawItem } from "./scan";
-
-function differences(draft: ArtifactDraft, expected: Artifact) {
-  const keys = Object.keys({ ...draft, ...expected }) as (keyof Artifact)[];
+function differences<T extends object>(draft: Partial<T>, expected: T) {
+  const keys = Object.keys({ ...draft, ...expected }) as Extract<
+    keyof T,
+    string
+  >[];
   return keys.filter((key) => !isDeepStrictEqual(draft[key], expected[key]));
 }
 
 // Minimum-cost alignment localizes omissions and repeats for the diagnostic report.
 // The regression assertion still compares every artifact in the original order.
-export function compare(items: RawItem[], expected: Artifact[]) {
+export function compare<T extends object>(
+  items: { draft: Partial<T>; issues: string[]; time: number }[],
+  expected: T[],
+) {
   const costs = Array.from({ length: items.length + 1 }, () =>
     new Array<number>(expected.length + 1).fill(0),
   );

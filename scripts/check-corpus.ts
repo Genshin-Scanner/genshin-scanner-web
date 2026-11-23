@@ -4,16 +4,24 @@ import { basename, dirname, resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { chromium } from "playwright";
 import { build, preview } from "vite";
-import type { Artifact } from "../packages/good/src";
+import type { InventoryGoodFile } from "../packages/good/src";
 import { compare } from "./corpus/compare.ts";
 
 const filename = resolve(process.argv[2] ?? "test-assets/33-1/video.mp4");
+const unannotated = process.argv[3] === "--unannotated";
 const annotations = resolve(
-  process.argv[3] ?? resolve(dirname(filename), "expected.json"),
+  (!unannotated && process.argv[3]) ||
+    resolve(dirname(filename), "expected.json"),
 );
-const expected: Artifact[] = JSON.parse(
-  await readFile(annotations, "utf8"),
-).artifacts;
+const expected: InventoryGoodFile | undefined = unannotated
+  ? undefined
+  : JSON.parse(await readFile(annotations, "utf8"));
+if (!unannotated) {
+  assert.ok(
+    Array.isArray(expected?.artifacts) || Array.isArray(expected?.weapons),
+    "The reference must contain at least one item array.",
+  );
+}
 const root = resolve("apps/web");
 const bundles = await build({
   configFile: false,
@@ -76,7 +84,12 @@ try {
         Manekin: process.env.SCANNER_MANEKIN,
       },
     );
-    const { mismatches, ...counts } = compare(output.items, expected);
+    const artifacts = output.items.filter((item) => item.kind === "artifact");
+    const weapons = output.items.filter((item) => item.kind === "weapon");
+    const artifactComparison =
+      expected?.artifacts && compare(artifacts, expected.artifacts);
+    const weaponComparison =
+      expected?.weapons && compare(weapons, expected.weapons);
     const seconds = Object.fromEntries(
       Object.entries(output.milliseconds).map(([phase, time]) => [
         phase,
@@ -85,9 +98,18 @@ try {
     );
     const summary = {
       file: basename(filename),
-      reference: basename(annotations),
+      reference: expected && basename(annotations),
       browser: browser.version(),
-      ...counts,
+      artifacts: {
+        detected: artifacts.length,
+        flagged: artifacts.filter((item) => item.issues.length).length,
+        ...artifactComparison,
+      },
+      weapons: {
+        detected: weapons.length,
+        flagged: weapons.filter((item) => item.issues.length).length,
+        ...weaponComparison,
+      },
       skipped: output.skipped,
       seconds,
     };
@@ -99,18 +121,26 @@ try {
     const report = resolve(dir, basename(filename) + ".json");
     await writeFile(
       report,
-      JSON.stringify({ summary, mismatches, items: output.items }, null, 2),
+      JSON.stringify({ summary, items: output.items }, null, 2),
     );
     console.log(summary, report);
-    assert.equal(output.skipped, 0, "Unsupported artifacts");
-    assert.ok(
-      isDeepStrictEqual(
-        output.items.map((item) => item.draft),
-        expected,
-      ),
-      "Raw artifacts differ from the annotations. See the private report for details.",
-    );
-    assert.equal(summary.flagged, 0, "Unresolved review flags");
+    for (const [kind, actual, reference] of [
+      ["Artifacts", artifacts, expected?.artifacts],
+      ["Weapons", weapons, expected?.weapons],
+    ] as const) {
+      if (!reference) continue;
+      assert.ok(
+        isDeepStrictEqual(
+          actual.map((item) => item.draft),
+          reference,
+        ),
+        kind + " differ from the annotations. See the private report.",
+      );
+      assert.ok(
+        actual.every((item) => !item.issues.length),
+        "Unresolved " + kind.toLowerCase() + " review flags",
+      );
+    }
   } finally {
     await browser.close();
   }

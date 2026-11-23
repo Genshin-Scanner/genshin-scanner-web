@@ -3,7 +3,7 @@
   "language": "Interface language",
   "externalLinks": "Genshin resources",
   "license": "MIT License",
-  "title": "Scan your artifacts",
+  "title": "Scan weapons and artifacts",
   "intro": "Choose an inventory recording to review weapons and artifacts, configure their owners, and export to Genshin Optimizer.",
   "chooseRecording": "Choose recording",
   "recording": "Inventory recording",

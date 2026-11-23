@@ -5,13 +5,13 @@ Turn a Genshin Impact inventory recording into a [GOOD](https://github.com/frzyc
 ## Scan an inventory
 
 1. Open the inventory in the English PC version of the game. Record your screen while selecting each 3–5★ weapon and 4–5★ artifact you want to export. You can switch between the inventory tabs in the same recording. Leave each selection visible long enough for its details and selected tile to settle.
-2. Open the scanner. If you renamed the Traveler, Wanderer, or Manekin, enter their in-game names under **Custom character names** before choosing the recording. It detects item changes, reads each panel, and shows a thumbnail and timestamp for each artifact.
+2. Open the scanner. If you renamed the Traveler, Wanderer, or Manekin, enter their in-game names under **Custom character names** before choosing the recording. The scanner detects item changes, reads each panel, and shows a thumbnail and timestamp for each item.
 3. Review flagged cards against the recorded panel. Under **Characters**, enter the level, ascension, constellation, and base talent levels of each owner, or explicitly exclude their settings. If needed, select the Traveler's element. Excluded character settings leave equipment ownership in the file. Choose **Export GOOD**.
 4. In Genshin Optimizer, open **Settings → Current Database → Upload**, select the JSON file, and review the import summary before updating the database.
 
 Choose MP4 (H.264, HEVC, AV1), WebM (VP8, VP9), or MKV (H.264, HEVC, AV1). Playback depends on the browser and the codecs available on the device. See [recording formats and verification](docs/recording-formats.md).
 
-The full scan, review, and export workflow has been tested in desktop Chromium, Edge, and Firefox. See the [project status](docs/PROJECT-STATE.md) for results and outstanding browser checks.
+Artifact scan, review, and export have been tested in desktop Chromium, Edge, and Firefox. The mixed workflow has been tested in Edge. See the [project status](docs/PROJECT-STATE.md) for results and outstanding browser checks.
 
 ## Run locally
 
@@ -30,7 +30,7 @@ Open the local URL printed by Vite. To build the static site, run `bun run build
 | Workspace | Use it for |
 |-----------|------------|
 | [`@scanner/good`](packages/good/README.md) | GOOD types, validation, export, and updating the pinned Optimizer schema. |
-| [`@scanner/core`](packages/core/README.md) | Recognizing artifacts from pixels with an OCR function supplied by the caller. |
+| [`@scanner/core`](packages/core/README.md) | Recognizing inventory items from pixels with an OCR function supplied by the caller. |
 | [`@scanner/browser`](packages/browser/README.md) | Scanning a local video in a browser, including decoding, OCR, and cancellation. |
 | [`@scanner/web`](apps/web/README.md) | Running the React application to scan, review, and download artifacts. |
 
@@ -66,7 +66,7 @@ For another browser, use e.g. `bun run check:browser firefox`. The optional argu
 ## TBD
 
 - [x] Add numeric regression fixtures and compare raw scan results against annotated recordings.
-- [x] Recognize custom names for the Traveler, Wanderer, and Manekin. Flag equipped Manekin artifacts until GOOD provides an owner key.
+- [x] Recognize custom names for the Traveler, Wanderer, and Manekin. Flag Manekin equipment until GOOD provides an owner key.
 - [x] Migrate the web interface to Tailwind CSS.
 - [x] Highlight missing fields in the review form so players can find what blocks export.
 - [x] Localize the application interface with i18n.

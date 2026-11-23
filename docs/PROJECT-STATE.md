@@ -1,6 +1,6 @@
 # Genshin Scanner project status
 
-The scanner processes a local inventory recording and exports GOOD v3. It finds English 4★ and 5★ artifact cards, shows thumbnails and timestamps, flags uncertain fields, and lets the player exclude items before export. The English and Russian interfaces use i18next. The header language selector remembers the player’s preference. OCR still reads English game footage. The editor and artifact list display localized game names while preserving GOOD keys in exports. The review list highlights flagged artifacts. The editor identifies missing fields, invalid stat keys and values, and group-wide roll constraints. The static site includes its OCR assets.
+The scanner processes a local inventory recording and exports GOOD v3. It shows thumbnails and timestamps, flags uncertain fields, and lets the player exclude items before export. The English and Russian interfaces use i18next. The header language selector remembers the player’s preference. OCR reads English game footage. The artifact editor and list display localized game names while preserving GOOD keys in exports. The editor identifies missing fields, invalid stat keys and values, and group-wide roll constraints. The static site includes its OCR assets.
 
 The scanner accepts MP4, WebM, and Matroska recordings. [Recording formats](recording-formats.md) covers codec pairs, local repackaging, browser results, and the procedure for testing a new combination.
 
@@ -28,6 +28,12 @@ The [Pages workflow](../.github/workflows/pages.yml) also calls Checks on pushes
 | `bun run check:video` | Uses FFmpeg to decode the recording and compares the detector’s item sequence with 33 reference PNGs. |
 | `bun run check:browser msedge` | Exercises cancellation, correction, exclusion, and download in the built UI against the 33-artifact reference. Pass a recording path and `--mixed` to exercise weapons and character forms together. |
 | `bun run check:corpus [recording] [reference]` | Runs Edge and compares annotated item arrays in selection order. Pass `--unannotated` to save counts and field issues without a reference. [Private corpus workflow](recognition.md) |
+
+### Mixed inventory checks
+
+Edge 158.0.4370.33 processed the full 7 minute 52 second English PC recording. It found 98 weapon selections and 448 artifact selections in 480.5 seconds. Three weapons and eight artifacts flagged the equipped character field. The recording has no manual reference yet, so these are detection and review counts. The same scanner matched all annotated artifacts in the three earlier recordings below.
+
+An Edge test on a short excerpt edited a weapon's refinement, filled one character form, and exported five weapons, five artifacts, and one character together. Genshin Optimizer 10.40.0 accepted a separate synthetic mixed export and initialized the character whose equipment was included without a character configuration. A pixel regression test checks that two highlighted inventory tiles produce separate selections even when their weapon panels are identical.
 
 ### Raw recognition results
 
