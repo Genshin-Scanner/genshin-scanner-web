@@ -1,9 +1,9 @@
 import { gameLabels } from "../gameLabels";
 import { useTranslation } from "react-i18next";
-import type { Row } from "../review";
+import type { InventoryRow } from "../review";
 
 interface ArtifactListProps {
-  rows: Row[];
+  rows: InventoryRow[];
   selected: number;
   select: (index: number) => void;
 }
@@ -19,7 +19,7 @@ export function ArtifactList({
   return (
     <nav
       className="max-h-64 overflow-auto rounded-xl border border-stone-300 bg-white p-2 md:max-h-[80vh]"
-      aria-label={t("list")}
+      aria-label={t(rows[0]?.kind === "weapon" ? "weaponsTab" : "list")}
     >
       {rows
         .map((r, i) => ({ r, i }))
@@ -43,7 +43,13 @@ export function ArtifactList({
               alt=""
             />
             <span className="text-sm font-semibold">
-              {r.draft.setKey ? labels.sets[r.draft.setKey] : t("unidentified")}
+              {r.kind === "weapon"
+                ? r.draft.key
+                  ? labels.weapons[r.draft.key]
+                  : t("unidentifiedWeapon")
+                : r.draft.setKey
+                  ? labels.sets[r.draft.setKey]
+                  : t("unidentified")}
               <small className="block text-xs font-normal text-stone-600">
                 {t("timestamp", {
                   time: r.time.toLocaleString(i18n.resolvedLanguage, {

@@ -13,6 +13,8 @@ The check runs the browser scanner before any review edits. It compares all GOOD
 
 ## Recognition details
 
+The corpus check compares the fields and selection order of each array present in the GOOD reference. Other arrays still appear in the report. Pass `--unannotated` in place of the reference file to record the counts, field issues, and timestamps while annotations are being prepared. This mode collects observations and cannot measure recognition accuracy.
+
 The detector samples a small frame ten times per second. It compares the icon, main value, substat lines, and grid movement. OCR runs on settled frames. When localizing a PC card, the paper edge provides its width even if the title wraps. A crafted artifact can have an elixir banner below the stars. The slot and main stat stay above that banner, while the level and substats move down with the paper.
 
 The English profile reads the stat label and number separately when it can identify the plus sign and each following glyph. Compact templates describe aspect ratio and ink coverage of the digits and punctuation, aggregated from labeled stat lines. A low score margin, touching glyphs, or additional text triggers whole-line OCR. Game roll validation still applies. The public numeric fixture contains only three cropped stat lines.

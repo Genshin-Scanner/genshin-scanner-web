@@ -1,12 +1,12 @@
-import {
-  createEnglishProfile,
-  markFrame,
-  pcLayout,
-  type CustomOwnerNames,
-} from "@scanner/core";
+import type { CustomOwnerNames } from "@scanner/core";
 import { useRef, useState } from "react";
-import { ScanError, scanVideo, type ScanProgress } from "@scanner/browser";
-import type { Row } from "./review";
+import {
+  ScanError,
+  scanInventoryVideo,
+  type ScanProgress,
+  type SkippedInventory,
+} from "@scanner/browser";
+import type { CharacterEdits, InventoryRow } from "./review";
 
 export type ScanStatus =
   | ""
@@ -21,11 +21,14 @@ const assetBase = new URL(import.meta.env.BASE_URL + "ocr/", document.baseURI);
 
 export function useRecordingScan(names: CustomOwnerNames) {
   const active = useRef<AbortController | null>(null);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [selected, select] = useState(0);
+  const [rows, setRows] = useState<InventoryRow[]>([]);
+  const [characters, setCharacters] = useState<CharacterEdits>({});
   const [progress, setProgress] = useState<ScanProgress>();
   const [status, setStatus] = useState<ScanStatus>("");
-  const [skipped, setSkipped] = useState(0);
+  const [skipped, setSkipped] = useState<SkippedInventory>({
+    artifacts: 0,
+    weapons: 0,
+  });
   const [filename, setFilename] = useState("");
 
   async function start(file?: File) {
@@ -33,14 +36,14 @@ export function useRecordingScan(names: CustomOwnerNames) {
     const controller = new AbortController();
     active.current = controller;
     setRows([]);
-    setSkipped(0);
-    select(0);
+    setSkipped({ artifacts: 0, weapons: 0 });
+    setCharacters({});
     setFilename(file.name);
     setStatus("");
     setProgress({ phase: "Finding cards", done: 0, total: 1 });
     let count = 0;
     try {
-      const unsupported = await scanVideo(
+      const unsupported = await scanInventoryVideo(
         file,
         assetBase,
         controller.signal,
@@ -49,14 +52,16 @@ export function useRecordingScan(names: CustomOwnerNames) {
           count++;
           setRows((old) => [...old, { ...item, excluded: false }]);
         },
-        {
-          locale: createEnglishProfile(names),
-          layout: pcLayout,
-          mark: markFrame,
-        },
+        names,
       );
       setSkipped(unsupported);
-      setStatus(count ? "complete" : unsupported ? "unsupported" : "empty");
+      setStatus(
+        count
+          ? "complete"
+          : unsupported.artifacts || unsupported.weapons
+            ? "unsupported"
+            : "empty",
+      );
     } catch (e) {
       setStatus(
         controller.signal.aborted
@@ -72,22 +77,20 @@ export function useRecordingScan(names: CustomOwnerNames) {
     }
   }
 
-  function changeSelected(edit: (row: Row) => Row) {
-    setRows((list) =>
-      list.map((row, index) => (index === selected ? edit(row) : row)),
-    );
+  function changeRow(index: number, edit: (row: InventoryRow) => InventoryRow) {
+    setRows((list) => list.map((row, i) => (index === i ? edit(row) : row)));
   }
 
   return {
     rows,
-    selected,
-    select,
+    characters,
+    setCharacters,
     progress,
     status,
     skipped,
     filename,
     start,
-    changeSelected,
+    changeRow,
     cancel: () => active.current?.abort(),
   };
 }

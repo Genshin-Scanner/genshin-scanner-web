@@ -1,11 +1,12 @@
 import { expect, test } from "bun:test";
 import {
-  downloadData,
+  inventoryDownloadData,
   edited,
-  scanReport,
-  type Row,
+  inventoryScanReport,
+  type InventoryRow,
 } from "../apps/web/src/review";
-const row: Row = {
+const row: Extract<InventoryRow, { kind: "artifact" }> = {
+  kind: "artifact",
   draft: {},
   issues: ["level"],
   time: 0,
@@ -14,7 +15,7 @@ const row: Row = {
   excluded: false,
 };
 test("review blocks unresolved readings and permits explicit exclusion", () => {
-  expect(() => downloadData([row])).toThrow();
+  expect(() => inventoryDownloadData([row], {})).toThrow();
   const fixed = edited(row, {
     level: 0,
     rarity: 4,
@@ -29,7 +30,7 @@ test("review blocks unresolved readings and permits explicit exclusion", () => {
     ],
   });
   expect(
-    downloadData([fixed, { ...row, excluded: true }]).artifacts,
+    inventoryDownloadData([fixed, { ...row, excluded: true }], {}).artifacts,
   ).toHaveLength(1);
 });
 
@@ -41,12 +42,13 @@ test("diagnostics preserve raw values even after correction and never embed the 
     detail: "private panel",
   };
   const corrected = edited(edited(initial, { level: 4 }), { level: 8 });
-  expect(scanReport([corrected])).toEqual({
+  expect(inventoryScanReport([corrected])).toEqual({
     format: "genshin-scanner-review",
-    version: 1,
+    version: 2,
     items: [
       {
         number: 1,
+        kind: "artifact",
         time: 1.5,
         draft: {},
         issues: ["level"],
@@ -54,5 +56,5 @@ test("diagnostics preserve raw values even after correction and never embed the 
       },
     ],
   });
-  expect(() => downloadData([corrected])).toThrow();
+  expect(() => inventoryDownloadData([corrected], {})).toThrow();
 });

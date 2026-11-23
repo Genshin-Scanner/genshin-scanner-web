@@ -12,6 +12,7 @@ import {
 import type { Row } from "./review";
 import { NumberField } from "./components/NumberField";
 import { Choice } from "./components/Choice";
+import { EquipmentEditor } from "./components/EquipmentEditor";
 import { SubstatFields } from "./components/SubstatFields";
 
 export function Editor({
@@ -44,26 +45,15 @@ export function Editor({
   }
 
   return (
-    <article className="rounded-xl border border-stone-300 bg-white p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">{t("details")}</h2>
-        <button
-          className="cursor-pointer rounded-md border border-stone-300 px-3 py-2 hover:bg-stone-100"
-          onClick={toggle}
-        >
-          {row.excluded ? t("include") : t("exclude")}
-        </button>
-      </div>
-      <img
-        className="mx-auto my-4 max-h-80 max-w-full object-contain"
-        src={row.detail}
-        alt={t("panel")}
-      />
-      {row.issues.length > 0 && (
-        <p className="mb-3 rounded-md bg-amber-100 p-2 text-amber-950">
-          {t("compare")}
-        </p>
-      )}
+    <EquipmentEditor
+      title={t("details")}
+      detail={row.detail}
+      excluded={row.excluded}
+      include={t("include")}
+      exclude={t("exclude")}
+      flagged={!!row.issues.length}
+      toggle={toggle}
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <Choice
           label={t("setKey")}
@@ -138,6 +128,6 @@ export function Editor({
           onChange={(stats) => patch(group, stats)}
         />
       ))}
-    </article>
+    </EquipmentEditor>
   );
 }

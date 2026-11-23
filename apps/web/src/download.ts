@@ -1,4 +1,9 @@
-import { downloadData, scanReport, type Row } from "./review";
+import {
+  inventoryDownloadData,
+  inventoryScanReport,
+  type CharacterEdits,
+  type InventoryRow,
+} from "./review";
 
 function downloadJson(data: unknown, filename: string) {
   const url = URL.createObjectURL(
@@ -11,10 +16,16 @@ function downloadJson(data: unknown, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export function downloadArtifacts(rows: Row[]) {
-  downloadJson(downloadData(rows), "genshin-artifacts.good.json");
+export function downloadInventory(
+  rows: InventoryRow[],
+  characters: CharacterEdits,
+) {
+  downloadJson(
+    inventoryDownloadData(rows, characters),
+    "genshin-inventory.good.json",
+  );
 }
 
-export function downloadScanReport(rows: Row[]) {
-  downloadJson(scanReport(rows), "genshin-scan-report.json");
+export function downloadScanReport(rows: InventoryRow[]) {
+  downloadJson(inventoryScanReport(rows), "genshin-scan-report.json");
 }

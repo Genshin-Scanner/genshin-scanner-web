@@ -6,6 +6,8 @@ The scanner accepts MP4, WebM, and Matroska recordings. [Recording formats](reco
 
 Custom character names are optional, saved on the device, and applied to the next scan. Traveler and Wanderer export under their GOOD keys. Manekin equipment requires an explicit review decision. After scanning, the browser console command `downloadScanReport()` saves the original readings and timestamps for diagnosis.
 
+A single recording can show 3–5★ weapons and 4–5★ artifacts. The Weapons review reads name, level, ascension, refinement, lock, and equipped character. The Characters review collects owners of included items and offers level, ascension, constellation, and base talent fields. Users can exclude a character configuration while preserving equipment ownership. The app saves all included categories in one GOOD v3 file. [Mixed inventory architecture](v2-ARCHITECTURE.md)
+
 ## Running the site
 
 The header and browser tab share the scanner icon. The header links to the official game site and Genshin Optimizer. The help button next to GOOD export explains how to import the file in Optimizer. The footer credits the project contributors and links to the source repository and the MIT license served with the build.
@@ -24,8 +26,8 @@ The [Pages workflow](../.github/workflows/pages.yml) also calls Checks on pushes
 | `bun run check` | Public regression tests, Prettier, TypeScript, and production builds of the three libraries and the site. |
 | `bun run check:frames` | Local OCR on three private reference PNGs. |
 | `bun run check:video` | Uses FFmpeg to decode the recording and compares the detector’s item sequence with 33 reference PNGs. |
-| `bun run check:browser msedge` | Exercises cancellation, correction, exclusion, and download through the production UI. Also accepts `chromium`, `firefox`, or `webkit`. Requires Node with TypeScript support, the selected browser, a production build, the private recording, and the manual reference data in `test-assets/33-1/expected.json`. |
-| `bun run check:corpus [recording] [reference]` | Runs Edge and compares the raw scan with every annotated field in selection order. [Private corpus workflow](recognition.md) |
+| `bun run check:browser msedge` | Exercises cancellation, correction, exclusion, and download in the built UI against the 33-artifact reference. Pass a recording path and `--mixed` to exercise weapons and character forms together. |
+| `bun run check:corpus [recording] [reference]` | Runs Edge and compares annotated item arrays in selection order. Pass `--unannotated` to save counts and field issues without a reference. [Private corpus workflow](recognition.md) |
 
 ### Raw recognition results
 
